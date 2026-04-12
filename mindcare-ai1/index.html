@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MindCare – Mental Health Portal</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💜</text></svg>"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F0EDF8;--surface:#fff;--s2:#F7F5FC;
+  --pu:#7C5CFC;--pul:#EDE8FF;--pum:#B39DFF;--pud:#5B3FD4;
+  --te:#4ECDC4;--tel:#E6FAF9;
+  --ro:#FF6B9D;--rol:#FFF0F5;
+  --am:#FFB547;--aml:#FFF8EC;
+  --gr:#52C97A;--grl:#EDFBF2;
+  --ink:#1A1630;--ink2:#6B6880;--ink3:#A8A4BC;
+  --r:20px;--rsm:12px;--rxs:8px;
+  --sh:0 4px 24px rgba(124,92,252,.08);
+  --shg:0 12px 40px rgba(124,92,252,.16);
+  --shx:0 20px 60px rgba(124,92,252,.22);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:'Instrument Serif',serif;font-weight:400}
+button{font-family:'Outfit',sans-serif;cursor:pointer;border:none;outline:none}
+input,textarea,select{font-family:'Outfit',sans-serif}
+a{text-decoration:none;color:inherit}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--pum);border-radius:10px}
+.app{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--surface);border-right:1px solid rgba(124,92,252,.08);padding:28px 20px;display:flex;flex-direction:column;gap:4px;animation:sideIn .5s cubic-bezier(.22,1,.36,1) both}
+@keyframes sideIn{from{transform:translateX(-30px);opacity:0}to{transform:translateX(0);opacity:1}}
+.logo{display:flex;align-items:center;gap:10px;padding-bottom:24px;margin-bottom:8px;border-bottom:1px solid rgba(124,92,252,.08)}
+.logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--pu),var(--pum));display:flex;align-items:center;justify-content:center;font-size:18px;transition:transform .25s;cursor:pointer}
+.logo-icon:hover{transform:rotate(15deg) scale(1.1)}
+.logo-name{font-family:'Instrument Serif',serif;font-size:18px}
+.logo-sub{font-size:10px;color:var(--ink3);letter-spacing:.5px}
+.nav-sec-label{font-size:10px;color:var(--ink3);font-weight:600;letter-spacing:1px;text-transform:uppercase;padding:10px 10px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--rxs);font-size:14px;font-weight:500;color:var(--ink2);cursor:pointer;transition:background .18s,color .18s,transform .18s}
+.nav-item:hover{background:var(--pul);color:var(--pu);transform:translateX(3px)}
+.nav-item.active{background:var(--pul);color:var(--pu)}
+.sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid rgba(124,92,252,.08)}
+.user-row{display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--rxs);cursor:pointer;transition:background .18s}
+.user-row:hover{background:var(--pul)}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--pu),var(--te));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:#fff;flex-shrink:0;transition:transform .2s}
+.user-row:hover .avatar{transform:scale(1.1)}
+.user-name{font-size:13px;font-weight:600}
+.user-role{font-size:11px;color:var(--ink3)}
+.main{padding:28px;overflow-y:auto;display:flex;flex-direction:column;gap:20px}
+.page{display:none;flex-direction:column;gap:20px;animation:pageIn .35s cubic-bezier(.22,1,.36,1) both}
+.page.active{display:flex}
+@keyframes pageIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.topbar{display:flex;align-items:center;justify-content:space-between;animation:fadeDown .4s ease both}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+.topbar h1{font-size:26px;line-height:1.2}
+.topbar p{font-size:14px;color:var(--ink2);margin-top:2px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.date-badge{background:var(--surface);padding:8px 16px;border-radius:100px;font-size:13px;color:var(--ink2);box-shadow:var(--sh);border:1px solid rgba(124,92,252,.1);transition:transform .2s}
+.date-badge:hover{transform:scale(1.04)}
+.notif-btn{width:40px;height:40px;background:var(--surface);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh);border:1px solid rgba(124,92,252,.1);font-size:18px;cursor:pointer;position:relative;transition:transform .2s}
+.notif-btn:hover{transform:scale(1.12) rotate(8deg)}
+.notif-dot{position:absolute;top:8px;right:8px;width:8px;height:8px;background:var(--ro);border-radius:50%;border:2px solid #fff;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.5)}}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat-card{background:var(--surface);border-radius:var(--r);padding:18px 20px;box-shadow:var(--sh);position:relative;overflow:hidden;cursor:pointer;transition:transform .22s,box-shadow .22s;animation:fadeUp .5s cubic-bezier(.22,1,.36,1) both}
+.stat-card:hover{transform:translateY(-5px);box-shadow:var(--shx)}
+.stat-card::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;opacity:.13;animation:orb 3s ease-in-out infinite}
+@keyframes orb{0%,100%{transform:scale(1);opacity:.13}50%{transform:scale(1.15);opacity:.2}}
+.stat-card.purple::before{background:var(--pu)}.stat-card.teal::before{background:var(--te)}.stat-card.rose::before{background:var(--ro)}.stat-card.amber::before{background:var(--am)}
+.stat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:12px;transition:transform .3s}
+.stat-card:hover .stat-icon{transform:rotate(8deg) scale(1.1)}
+.stat-card.purple .stat-icon{background:var(--pul)}.stat-card.teal .stat-icon{background:var(--tel)}.stat-card.rose .stat-icon{background:var(--rol)}.stat-card.amber .stat-icon{background:var(--aml)}
+.stat-label{font-size:11px;color:var(--ink3);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px}
+.stat-value{font-family:'Instrument Serif',serif;font-size:30px}
+.stat-value span{font-size:14px;font-family:'Outfit',sans-serif;font-weight:500}
+.stat-trend{font-size:12px;font-weight:500;margin-top:4px}
+.tg{color:var(--gr)}.tw{color:var(--am)}.tb{color:var(--ro)}
+.card{background:var(--surface);border-radius:var(--r);padding:22px;box-shadow:var(--sh);transition:transform .22s,box-shadow .22s;animation:fadeUp .5s cubic-bezier(.22,1,.36,1) both}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shg)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.card-title{font-family:'Instrument Serif',serif;font-size:17px}
+.card-sub{font-size:12px;color:var(--ink3);margin-top:2px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.d1{animation-delay:.08s}.d2{animation-delay:.16s}.d3{animation-delay:.24s}.d4{animation-delay:.32s}.d5{animation-delay:.40s}.d6{animation-delay:.48s}.d7{animation-delay:.56s}
+.pill{display:inline-flex;align-items:center;padding:5px 12px;border-radius:100px;font-size:11px;font-weight:600;animation:pop .3s cubic-bezier(.22,1,.36,1) both}
+@keyframes pop{from{transform:scale(.75);opacity:0}to{transform:scale(1);opacity:1}}
+.pp{background:var(--pul);color:var(--pu)}.pg{background:var(--grl);color:#2A8C4A}.pa{background:var(--aml);color:#8C6010}.pr{background:var(--rol);color:#CC2060}
+.pb-wrap{height:8px;background:rgba(124,92,252,.1);border-radius:100px;overflow:hidden}
+.pb-fill{height:100%;border-radius:100px;width:0;transition:width 1.2s cubic-bezier(.22,1,.36,1)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.g3{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+.fl{font-size:11px;color:var(--ink2);font-weight:600;letter-spacing:.3px;text-transform:uppercase;margin-bottom:10px}
+.mood-grid{display:flex;gap:10px;margin-bottom:18px}
+.mood-btn{flex:1;min-width:0;padding:14px 6px 10px;border-radius:var(--rsm);background:var(--s2);border:2px solid transparent;cursor:pointer;text-align:center;transition:border-color .2s,background .2s,transform .2s,box-shadow .2s;display:flex;flex-direction:column;align-items:center;gap:5px}
+.mood-btn:hover{border-color:var(--pum);transform:translateY(-3px) scale(1.05);box-shadow:0 6px 16px rgba(124,92,252,.15)}
+.mood-btn.sel{border-color:var(--pu);background:var(--pul);transform:scale(1.04)}
+.mood-emoji{font-size:28px;display:block;transition:transform .3s}
+.mood-btn.sel .mood-emoji{animation:epop .35s cubic-bezier(.22,1,.36,1)}
+@keyframes epop{0%{transform:scale(1)}50%{transform:scale(1.35)}100%{transform:scale(1)}}
+.mood-label{font-size:11px;color:var(--ink2);font-weight:600}
+.mood-btn.sel .mood-label{color:var(--pu)}
+.jtxt{width:100%;min-height:110px;padding:14px 16px;border:2px solid rgba(124,92,252,.12);border-radius:var(--rsm);font-size:14px;line-height:1.65;color:var(--ink);background:var(--s2);resize:none;transition:border-color .2s,background .2s,box-shadow .2s,transform .15s;margin-bottom:6px}
+.jtxt:focus{outline:none;border-color:var(--pu);background:var(--surface);transform:scale(1.01);box-shadow:0 0 0 4px rgba(124,92,252,.1)}
+.cc{font-size:11px;color:var(--ink3);text-align:right;margin-bottom:16px}
+.quiz-q{margin-bottom:14px}
+.quiz-t{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:8px}
+.quiz-opts{display:flex;flex-wrap:wrap;gap:6px}
+.qopt{padding:6px 14px;border-radius:100px;font-size:11px;font-weight:600;background:var(--s2);border:1.5px solid transparent;color:var(--ink2);cursor:pointer;transition:background .18s,border-color .18s,color .18s,transform .15s}
+.qopt:hover{border-color:rgba(124,92,252,.4);color:var(--ink);transform:scale(1.04)}
+.qopt.sel{background:var(--pul);border-color:var(--pu);color:var(--pu)}
+.btn-p{width:100%;padding:14px;margin-top:18px;background:linear-gradient(135deg,var(--pu),var(--pum));color:#fff;border-radius:var(--rsm);font-size:14px;font-weight:600;letter-spacing:.3px;transition:transform .2s,box-shadow .2s,background .2s}
+.btn-p:hover:not(:disabled){transform:translateY(-2px) scale(1.02);box-shadow:0 10px 30px rgba(124,92,252,.4)}
+.btn-p:active:not(:disabled){transform:scale(.97)}
+.btn-p:disabled{opacity:.5;cursor:not-allowed}
+.loading-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px 0}
+.dots{display:flex;gap:7px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--pu);animation:db 1.1s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.18s}.dot:nth-child(3){animation-delay:.36s}
+@keyframes db{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-11px)}}
+.lt{font-size:13px;color:var(--ink3)}
+.rc{border-radius:var(--rsm);padding:20px;margin-top:14px;border:2px solid transparent;animation:fadeUp .45s cubic-bezier(.22,1,.36,1) both}
+.rc.low{background:var(--grl);border-color:var(--gr)}.rc.moderate{background:var(--aml);border-color:var(--am)}.rc.high{background:var(--rol);border-color:var(--ro)}
+.rc-top{display:flex;align-items:center;gap:13px;margin-bottom:12px}
+.rc-icon{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;animation:pop .4s cubic-bezier(.22,1,.36,1) .1s both}
+.rc-meta{flex:1}
+.rc-rl{font-size:11px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+.rc-title{font-family:'Instrument Serif',serif;font-size:18px}
+.rc.low .rc-title{color:#1A6B3A}.rc.moderate .rc-title{color:#7A5010}.rc.high .rc-title{color:#8C1040}
+.rc-score{font-family:'Instrument Serif',serif;font-size:38px;animation:pop .4s cubic-bezier(.22,1,.36,1) .18s both}
+.rc.low .rc-score{color:#1A6B3A}.rc.moderate .rc-score{color:#7A5010}.rc.high .rc-score{color:#8C1040}
+.sb-bg{height:6px;background:rgba(0,0,0,.08);border-radius:100px;overflow:hidden;margin-bottom:12px}
+.sb-fill{height:100%;border-radius:100px;width:0;transition:width 1.4s cubic-bezier(.22,1,.36,1)}
+.rc.low .sb-fill{background:var(--gr)}.rc.moderate .sb-fill{background:var(--am)}.rc.high .sb-fill{background:var(--ro)}
+.etags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.etag{padding:4px 12px;border-radius:100px;font-size:11px;font-weight:600;animation:pop .3s cubic-bezier(.22,1,.36,1) both}
+.ai-insight{font-size:13px;color:var(--ink2);font-style:italic;line-height:1.65;border-left:3px solid var(--pum);padding-left:12px;margin-bottom:12px;animation:slr .4s cubic-bezier(.22,1,.36,1) .2s both}
+@keyframes slr{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+.rl{font-size:11px;color:var(--ink3);font-weight:600;letter-spacing:.4px;text-transform:uppercase;margin-bottom:8px}
+.rlist{list-style:none;display:flex;flex-direction:column;gap:6px}
+.ri{font-size:12px;color:var(--ink);padding:8px 12px;background:rgba(255,255,255,.7);border-radius:8px;display:flex;align-items:flex-start;gap:8px;animation:slr .35s cubic-bezier(.22,1,.36,1) both}
+.ri::before{content:'→';color:var(--pu);font-weight:700;flex-shrink:0}
+.crisis{background:linear-gradient(135deg,var(--rol),#FFE8EF);border:2px solid rgba(255,107,157,.3);border-radius:var(--rsm);padding:16px;margin-top:12px;animation:fadeUp .4s cubic-bezier(.22,1,.36,1) .3s both}
+.crisis-title{font-size:13px;font-weight:700;color:#8C1040;margin-bottom:10px}
+.cline{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border-radius:var(--rxs);margin-bottom:6px;animation:slr .35s cubic-bezier(.22,1,.36,1) both}
+.cicon{width:32px;height:32px;border-radius:8px;background:var(--rol);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.cname{font-size:12px;font-weight:600}.cnum{font-size:11px;color:var(--ink3)}
+.ccall{margin-left:auto;padding:6px 14px;background:var(--ro);color:#fff;border-radius:100px;font-size:11px;font-weight:600;flex-shrink:0;transition:transform .2s,background .2s}
+.ccall:hover{transform:scale(1.08);background:#e0507a}
+.chart-wrap{position:relative;height:200px}
+.chart-load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:6px}
+.hlist{display:flex;flex-direction:column;gap:8px}
+.hrow{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--s2);border-radius:var(--rxs);cursor:pointer;transition:background .18s,transform .18s;animation:sll .4s cubic-bezier(.22,1,.36,1) both}
+@keyframes sll{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:translateX(0)}}
+.hrow:hover{background:var(--pul);transform:translateX(3px)}
+.hemoji{font-size:22px;width:34px;text-align:center;transition:transform .2s}
+.hrow:hover .hemoji{transform:scale(1.25) rotate(8deg)}
+.hdate{font-size:11px;color:var(--ink3);font-weight:500}.hmood{font-size:13px;font-weight:600}
+.hsnip{font-size:11px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px}
+.rec-card{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:var(--s2);border-radius:var(--rxs);border-left:3px solid var(--pum);cursor:pointer;transition:background .18s,transform .18s;animation:slr .4s cubic-bezier(.22,1,.36,1) both}
+.rec-card:hover{background:var(--pul);transform:translateX(4px)}
+.rci{font-size:18px;flex-shrink:0;margin-top:1px}.rct{font-size:13px;font-weight:600;margin-bottom:2px}.rcd{font-size:11px;color:var(--ink2);line-height:1.55}
+.path-item{margin-bottom:14px}
+.path-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.path-name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.res-hero{background:linear-gradient(135deg,var(--pul),var(--tel));border-radius:var(--r);padding:24px;border:1px solid rgba(124,92,252,.1)}
+.res-hero h3{font-size:20px;margin-bottom:6px}
+.res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.res-card{background:var(--surface);border-radius:var(--r);padding:20px;box-shadow:var(--sh);cursor:pointer;transition:transform .22s,box-shadow .22s;animation:fadeUp .5s cubic-bezier(.22,1,.36,1) both}
+.res-card:hover{transform:translateY(-5px);box-shadow:var(--shx)}
+.res-icon{font-size:28px;margin-bottom:12px}.res-title{font-family:'Instrument Serif',serif;font-size:16px;margin-bottom:6px}
+.res-desc{font-size:12px;color:var(--ink2);line-height:1.6;margin-bottom:10px}
+.res-link{display:inline-block;margin-top:10px;font-size:12px;font-weight:600;color:var(--pu);border-bottom:2px solid var(--pu);padding-bottom:1px;transition:transform .2s}
+.res-link:hover{transform:translateX(3px)}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.fbtn{padding:8px 18px;border-radius:100px;font-size:13px;font-weight:600;background:var(--surface);color:var(--ink2);border:1px solid rgba(124,92,252,.2);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.04);transition:background .18s,color .18s,transform .15s}
+.fbtn:hover{transform:scale(1.04)}.fbtn.active{background:var(--pu);color:#fff}
+.ecard{background:var(--surface);border-radius:var(--r);padding:18px 20px;box-shadow:var(--sh);cursor:pointer;transition:transform .18s,box-shadow .18s;animation:fadeUp .4s cubic-bezier(.22,1,.36,1) both;margin-bottom:10px}
+.ecard:hover{transform:translateY(-2px);box-shadow:var(--shg)}
+.erow{display:flex;align-items:center;gap:12px}
+.eemoji{font-size:30px;flex-shrink:0;transition:transform .2s}.ecard:hover .eemoji{transform:scale(1.18) rotate(8deg)}
+.einfo{flex:1;min-width:0}.edate{font-size:11px;color:var(--ink3);font-weight:500}.emood{font-size:14px;font-weight:600}
+.esnip{font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.escore{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:15px;font-weight:600;flex-shrink:0}
+.eexp{font-size:13px;color:var(--ink3);transition:transform .25s;flex-shrink:0}
+.ecard.open .eexp{transform:rotate(180deg)}
+.edetail{overflow:hidden;max-height:0;transition:max-height .35s cubic-bezier(.22,1,.36,1),opacity .3s;opacity:0}
+.edetail.open{max-height:500px;opacity:1}
+.edetail-inner{padding-top:16px;margin-top:14px;border-top:1px solid rgba(124,92,252,.1)}
+.goal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.goal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.goal-name{font-size:13px;font-weight:600;display:flex;gap:6px;align-items:center}
+#tc{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--surface);border-radius:var(--rsm);padding:12px 18px;box-shadow:var(--shg);font-size:13px;font-weight:500;color:var(--ink);border-left:4px solid var(--pu);animation:tin .35s cubic-bezier(.22,1,.36,1) both;pointer-events:all}
+.toast.success{border-color:var(--gr)}.toast.error{border-color:var(--ro)}
+@keyframes tin{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes tout{to{opacity:0;transform:translateX(30px)}}
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid rgba(124,92,252,.1);padding:6px 4px;z-index:100;box-shadow:0 -4px 20px rgba(124,92,252,.1)}
+.mob-items{display:flex;justify-content:space-around}
+.mnb{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 12px;border-radius:var(--rxs);cursor:pointer;background:transparent;border:none;transition:background .18s}
+.mnb.active{background:var(--pul)}.mni{font-size:20px;transition:transform .2s}.mnb.active .mni{transform:scale(1.2)}
+.mnl{font-size:10px;font-weight:600;color:var(--ink3)}.mnb.active .mnl{color:var(--pu)}
+@media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{display:none}.main{padding:16px 14px 80px}.mob-nav{display:block}.stat-grid{grid-template-columns:1fr 1fr}.g2,.g3{grid-template-columns:1fr}.goal-grid{grid-template-columns:1fr}}
+@media(max-width:500px){.mood-grid{gap:6px}.hsnip{max-width:120px}}
+</style>
+</head>
+<body>
+<div id="tc"></div>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">💜</div>
+      <div><div class="logo-name">MindCare</div><div class="logo-sub">Mental Health Portal</div></div>
+    </div>
+    <div id="snav"></div>
+    <div class="sidebar-footer">
+      <div class="user-row">
+        <div class="avatar">AJ</div>
+        <div><div class="user-name">Alex Johnson</div><div class="user-role">Student · IIT Delhi</div></div>
+      </div>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="page active" id="page-dashboard"></div>
+    <div class="page" id="page-checkin"></div>
+    <div class="page" id="page-history"></div>
+    <div class="page" id="page-progress"></div>
+    <div class="page" id="page-resources"></div>
+  </main>
+</div>
+<nav class="mob-nav"><div class="mob-items" id="mnav"></div></nav>
+<script>
+const MOODS=[{emoji:'😊',label:'Happy',val:5},{emoji:'😌',label:'Calm',val:4},{emoji:'😐',label:'Neutral',val:3},{emoji:'😟',label:'Worried',val:2},{emoji:'😢',label:'Sad',val:1}]
+const QUESTIONS=[{id:'sleep',text:'How was your sleep last night?',opts:['Great','Okay','Poor','Very poor']},{id:'stress',text:'How stressed did you feel today?',opts:['Not at all','A little','Quite a bit','Extremely']},{id:'social',text:'Have you connected with someone today?',opts:['Yes, meaningfully','Briefly','Not really','Feeling isolated']},{id:'appetite',text:'How was your appetite today?',opts:['Normal','Slightly off','Hardly ate',"Didn't care to eat"]}]
+const NAV=[{id:'dashboard',label:'Dashboard',icon:'📊',sec:'main'},{id:'checkin',label:'Check In',icon:'✅',sec:'main'},{id:'history',label:'History',icon:'📓',sec:'main'},{id:'progress',label:'Progress',icon:'📈',sec:'health'},{id:'resources',label:'Resources',icon:'🛡️',sec:'support'}]
+const CRISIS=[{icon:'📞',name:'iCall – TISS',sub:'Mon–Sat 8am–10pm',num:'9152987821'},{icon:'🆘',name:'Vandrevala Foundation',sub:'24/7 crisis support',num:'1860-2662-345'},{icon:'💬',name:'Snehi NGO',sub:'Emotional support',num:'044-24640050'},{icon:'🏥',name:'NIMHANS',sub:'National helpline',num:'080-46110007'}]
+const RESOURCES=[{icon:'🧘',title:'Breathing Exercises',desc:'Quick 4-7-8 breathing to calm your nervous system in under 3 minutes.',tag:'Anxiety',tb:'#F5E8EC',tc:'#6B2A3A'},{icon:'📓',title:'Journaling Prompts',desc:'Daily prompts to help you process emotions and build self-awareness.',tag:'Reflection',tb:'#EDE8FF',tc:'#5B3FD4'},{icon:'🌙',title:'Sleep Hygiene',desc:'Science-backed tips for better rest and improved mental clarity.',tag:'Sleep',tb:'#E6FAF9',tc:'#0F6E56'},{icon:'🤝',title:'Peer Support',desc:'Connect with communities of students and young professionals.',tag:'Social',tb:'#EBF2F7',tc:'#2A5A72'},{icon:'🎧',title:'Guided Meditations',desc:'Free sessions from 3 to 20 minutes for any time of day.',tag:'Mindfulness',tb:'#EDFBF2',tc:'#2E6B40'},{icon:'📚',title:'Self-Help Library',desc:'Curated articles, videos and worksheets on common mental health topics.',tag:'Education',tb:'#FFF8EC',tc:'#8C6010'}]
+const RISK={low:{label:"Low Risk — You're doing well",icon:'✦',bg:'#EDF7F0',bar:'#52C97A',tc:'#1A6B3A',pill:'pg'},moderate:{label:'Moderate Risk — Stay mindful',icon:'🌤',bg:'#FFF8EC',bar:'#FFB547',tc:'#7A5010',pill:'pa'},high:{label:'High Risk — Support available',icon:'⚠️',bg:'#FFF0F5',bar:'#FF6B9D',tc:'#8C1040',pill:'pr'}}
+const EC={stressed:{bg:'#FDF0E8',c:'#7A4010'},anxious:{bg:'#F5E8EC',c:'#6B2A3A'},sad:{bg:'#EBF2F7',c:'#2A5A72'},hopeful:{bg:'#EDF7F0',c:'#2E6B40'},calm:{bg:'#EDF7F0',c:'#2E6B40'},neutral:{bg:'#F1EFE8',c:'#5F5E5A'},happy:{bg:'#EDF7F0',c:'#2E6B40'},overwhelmed:{bg:'#FBF4E8',c:'#7A5320'},content:{bg:'#EDF7F0',c:'#2E6B40'},grateful:{bg:'#EDF7F0',c:'#2E6B40'},isolated:{bg:'#EBF2F7',c:'#2A5A72'},hopeless:{bg:'#F5E8EC',c:'#6B2A3A'},joyful:{bg:'#EDF7F0',c:'#2E6B40'},energised:{bg:'#E6FAF9',c:'#0F6E56'},mixed:{bg:'#F1EFE8',c:'#5F5E5A'},uncertain:{bg:'#F1EFE8',c:'#5F5E5A'}}
+const SAMPLES=[{id:1,date:'2026-03-13',mood:'Happy',emoji:'😊',moodVal:5,text:'Had a really productive study session today. Feeling grateful and energised.',risk:'low',score:22,emotions:['content','grateful'],recommendations:['Maintain this positive momentum','Keep your sleep schedule consistent','Celebrate small wins today']},{id:2,date:'2026-03-12',mood:'Worried',emoji:'😟',moodVal:2,text:'Exam stress is building up a lot. Hard to focus on anything.',risk:'moderate',score:58,emotions:['stressed','anxious'],recommendations:['Try 4-7-8 breathing exercises','Break tasks into smaller steps','Reach out to a study group']},{id:3,date:'2026-03-11',mood:'Calm',emoji:'😌',moodVal:4,text:'Went for a long walk, felt much better after. Nature really helps.',risk:'low',score:18,emotions:['calm','hopeful'],recommendations:['Continue daily walks','Practice gratitude journaling','Connect with a friend']},{id:4,date:'2026-03-10',mood:'Sad',emoji:'😢',moodVal:1,text:"Couldn't focus all day. Feeling disconnected and hopeless.",risk:'high',score:82,emotions:['sad','hopeless','isolated'],recommendations:['Please reach out to a counsellor','Talk to someone you trust','Take a break from academic pressure']},{id:5,date:'2026-03-09',mood:'Neutral',emoji:'😐',moodVal:3,text:'Average day, nothing notable happened.',risk:'low',score:30,emotions:['neutral'],recommendations:['Try something new today','Set one small goal','Check in with a friend']},{id:6,date:'2026-03-08',mood:'Happy',emoji:'😊',moodVal:5,text:'Great session with friends. Laughed a lot, felt very connected.',risk:'low',score:14,emotions:['joyful','energised'],recommendations:['Keep nurturing social bonds','Maintain this energy','Journal about what made you happy']},{id:7,date:'2026-03-07',mood:'Worried',emoji:'😟',moodVal:2,text:'Deadline pressure is overwhelming. Feeling behind on everything.',risk:'moderate',score:62,emotions:['overwhelmed','anxious'],recommendations:['Prioritise your task list','Take short breaks every 45 min','Deep breathing before sleep']}]
+const Store={key:'mc_entries',get(){try{const r=localStorage.getItem(this.key);return r?JSON.parse(r):[...SAMPLES]}catch{return[...SAMPLES]}},save(e){localStorage.setItem(this.key,JSON.stringify(e))},add(e){const a=this.get();a.unshift({...e,id:Date.now()});this.save(a);return a},stats(){const e=this.get(),s=e.map(x=>x.score),avg=s.length?Math.round(s.reduce((a,b)=>a+b,0)/s.length):0;return{avg,streak:e.length,latest:e[0]?.risk??'low',wellness:Math.max(0,100-avg),total:e.length}},last7(){return this.get().slice(0,7).reverse()}}
+function toast(msg,type='success'){const c=document.getElementById('tc'),el=document.createElement('div');el.className=`toast ${type}`;el.textContent=(type==='success'?'✓  ':'✕  ')+msg;c.appendChild(el);setTimeout(()=>{el.style.animation='tout .3s forwards';setTimeout(()=>el.remove(),300)},3000)}
+function countUp(el,target,dur=1200){let s=0,step=target/(dur/16),fi=Number.isInteger(target),t=setInterval(()=>{s+=step;if(s>=target){el.textContent=(fi?target:target.toFixed(1));clearInterval(t)}else{el.textContent=(fi?Math.floor(s):s.toFixed(1))}},16)}
+function animBar(el,pct,delay=0){setTimeout(()=>{el.style.width=pct+'%'},delay)}
+function fmtDate(d){return new Date(d).toLocaleDateString('en-IN',{weekday:'short',month:'short',day:'numeric',year:'numeric'})}
+function shortDate(d){return new Date(d).toLocaleDateString('en-IN',{month:'short',day:'numeric'})}
+function todayStr(){return new Date().toISOString().slice(0,10)}
+function pill(txt,cls){return`<span class="pill ${cls}">${txt}</span>`}
+function etag(label,delay=0){const c=EC[label?.toLowerCase()]??{bg:'#F1EFE8',c:'#5F5E5A'};return`<span class="etag" style="background:${c.bg};color:${c.c};animation-delay:${delay}s">${label}</span>`}
+function riskPill(risk){const r=RISK[risk]??RISK.low;return`<span class="pill ${r.pill}">${r.label.split('—')[0].trim()}</span>`}
+function hdr(title,sub,p,pc='pp'){return`<div class="card-header"><div><div class="card-title">${title}</div>${sub?`<div class="card-sub">${sub}</div>`:''}</div>${p?pill(p,pc):''}</div>`}
+function loading(msg='Reading your emotional patterns…'){return`<div class="loading-wrap"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><div class="lt">${msg}</div></div>`}
+function topbar(title,sub){const now=new Date().toLocaleDateString('en-IN',{weekday:'short',month:'short',day:'numeric',year:'numeric'});return`<div class="topbar"><div><h1>${title}</h1><p>${sub}</p></div><div class="topbar-right"><div class="date-badge">${now}</div><div class="notif-btn">🔔<div class="notif-dot"></div></div></div></div>`}
+function animStats(){document.querySelectorAll('.stat-value[data-t]').forEach(el=>countUp(el,parseFloat(el.dataset.t)))}
+function animBars(delay=400){setTimeout(()=>document.querySelectorAll('.pb-fill[data-p]').forEach(el=>animBar(el,el.dataset.p)),delay)}
+const FALLBACK={riskLevel:'moderate',score:45,emotions:['uncertain','mixed'],summary:'Unable to fully analyse.',recommendations:['Take a short breathing break','Reach out to someone you trust','Step outside for fresh air'],aiInsight:'Your feelings are valid. Take it one moment at a time.'}
+async function analyse({mood,text,answers}){const prompt=`You are a compassionate mental health screening assistant for students and young professionals.\nAnalyse the following check-in and return ONLY a valid JSON object, no preamble, no markdown.\nUser mood: ${mood.label} (score ${mood.val}/5)\nJournal entry: "${text}"\nSleep: ${answers.sleep??'unknown'}, Stress: ${answers.stress??'unknown'}, Social: ${answers.social??'unknown'}, Appetite: ${answers.appetite??'unknown'}\nReturn exactly: {"riskLevel":"low"|"moderate"|"high","score":0-100,"emotions":["word1","word2"],"summary":"one sentence max 20 words","recommendations":["tip1 max 12 words","tip2","tip3"],"aiInsight":"one warm encouraging sentence max 25 words"}`;try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});if(!r.ok)throw new Error(r.status);const d=await r.json(),raw=d.content.map(b=>b.text??'').join('');return JSON.parse(raw.replace(/```json|```/g,'').trim())}catch(e){console.warn('AI fallback:',e);return FALLBACK}}
+let TC=null,DC=null,BC=null
+const CO={responsive:true,maintainAspectRatio:false,animation:{duration:1600,easing:'easeInOutQuart'},plugins:{tooltip:{backgroundColor:'#fff',titleColor:'#1A1630',bodyColor:'#6B6880',borderColor:'rgba(124,92,252,.2)',borderWidth:1,padding:12,cornerRadius:10,titleFont:{family:'Outfit',weight:'600'},bodyFont:{family:'Outfit',size:11}}},scales:{y:{min:0,max:100,grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'Outfit',size:10},color:'#A8A4BC'},border:{display:false}},x:{grid:{display:false},ticks:{font:{family:'Outfit',size:10},color:'#A8A4BC'},border:{display:false}}}}
+function buildTrend(id){const c=document.getElementById(id);if(!c)return;if(TC){TC.destroy();TC=null}const e=Store.last7(),labels=e.map(x=>shortDate(x.date)),w=e.map(x=>Math.max(0,100-x.score)),s=e.map(x=>x.score);TC=new Chart(c,{type:'line',data:{labels,datasets:[{label:'Wellness',data:w,borderColor:'#7C5CFC',backgroundColor:'rgba(124,92,252,.07)',tension:.45,pointBackgroundColor:'#7C5CFC',pointRadius:4,pointHoverRadius:7,fill:true,borderWidth:2.5},{label:'Risk Score',data:s,borderColor:'#FF6B9D',backgroundColor:'rgba(255,107,157,.04)',tension:.45,pointBackgroundColor:'#FF6B9D',pointRadius:4,pointHoverRadius:7,fill:true,borderWidth:2,borderDash:[5,4]}]},options:{...CO,interaction:{mode:'index',intersect:false},plugins:{...CO.plugins,legend:{display:true,position:'top',labels:{font:{family:'Outfit',size:11},boxWidth:12,padding:14,color:'#6B6880'}}}}})}
+function buildDonut(id){const c=document.getElementById(id);if(!c)return;if(DC){DC.destroy();DC=null}const e=Store.get(),ct=e.reduce((a,x)=>{a[x.risk]=(a[x.risk]??0)+1;return a},{low:0,moderate:0,high:0});DC=new Chart(c,{type:'doughnut',data:{labels:['Low Risk','Moderate','High Risk'],datasets:[{data:[ct.low,ct.moderate,ct.high],backgroundColor:['#52C97A','#FFB547','#FF6B9D'],borderWidth:0,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:1400,easing:'easeInOutQuart'},cutout:'68%',plugins:{legend:{position:'bottom',labels:{font:{family:'Outfit',size:11},padding:14,color:'#6B6880'}},tooltip:CO.plugins.tooltip}}})}
+function buildBar(id){const c=document.getElementById(id);if(!c)return;if(BC){BC.destroy();BC=null}const e=Store.get().slice().reverse().slice(-10),bg=e.map(x=>x.risk==='low'?'rgba(82,201,122,.75)':x.risk==='moderate'?'rgba(255,181,71,.75)':'rgba(255,107,157,.75)');BC=new Chart(c,{type:'bar',data:{labels:e.map(x=>shortDate(x.date)),datasets:[{label:'Risk Score',data:e.map(x=>x.score),backgroundColor:bg,borderRadius:8,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:1400,easing:'easeInOutQuart'},plugins:{legend:{display:false},tooltip:CO.plugins.tooltip},scales:CO.scales}})}
+function renderDashboard(){const{avg,streak,latest,wellness}=Store.stats(),sc=x=>x==='low'?18:x==='moderate'?52:82;document.getElementById('page-dashboard').innerHTML=`${topbar("Hello, Alex 👋","How are you feeling today? Let's check in.")}<div class="stat-grid"><div class="stat-card purple d1"><div class="stat-icon">🧠</div><div class="stat-label">Wellness Score</div><div class="stat-value" data-t="${wellness}">0</div><div class="stat-trend ${wellness>60?'tg':'tb'}">${wellness>60?'↑ Feeling good':'↓ Low this week'}</div></div><div class="stat-card teal d2"><div class="stat-icon">📊</div><div class="stat-label">Avg Risk Score</div><div class="stat-value" data-t="${avg}">0</div><div class="stat-trend ${avg<40?'tg':'tw'}">${avg<40?'↓ Below threshold':'↑ Needs attention'}</div></div><div class="stat-card amber d3"><div class="stat-icon">🔥</div><div class="stat-label">Day Streak</div><div class="stat-value" data-t="${streak}">0</div><div class="stat-trend tg">Keep checking in!</div></div><div class="stat-card rose d4"><div class="stat-icon">💆</div><div class="stat-label">Current Risk</div><div class="stat-value" data-t="${sc(latest)}">0</div><div class="stat-trend ${latest==='low'?'tg':latest==='moderate'?'tw':'tb'}">${latest==='low'?'✦ Low risk':latest==='moderate'?'~ Moderate':'⚠ High risk'}</div></div></div><div class="g3"><div class="card d5">${hdr('Mood Trend','Last 7 days','Live data','pg')}<div class="chart-wrap"><div class="chart-load" id="tload"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><canvas id="tc-canvas" style="display:none"></canvas></div></div><div class="card d6">${hdr('Active Path',"This week's habits",'This week')}${renderPath()}</div></div><div class="g2"><div class="card d7">${hdr('Recommendations','Personalised for you','AI-generated')}${defaultRecs()}</div><div class="card d7">${hdr('Recent Entries','Your mood history','Last 5')}${hlist(Store.get().slice(0,5))}</div></div>`;animStats();animBars();setTimeout(()=>{const l=document.getElementById('tload'),c=document.getElementById('tc-canvas');if(l&&c){l.style.display='none';c.style.display='block';buildTrend('tc-canvas')}},350)}
+function renderPath(){return[{icon:'🧘',name:'Daily Meditation',pct:60,color:'#7C5CFC'},{icon:'🏃',name:'Physical Exercise',pct:85,color:'#4ECDC4'},{icon:'📓',name:'Journaling',pct:40,color:'#FFB547'}].map(p=>`<div class="path-item"><div class="path-top"><span class="path-name">${p.icon} ${p.name}</span><span style="font-size:13px;font-weight:700;color:${p.color}">${p.pct}%</span></div><div class="pb-wrap"><div class="pb-fill" data-p="${p.pct}" style="background:linear-gradient(90deg,${p.color},${p.color}99)"></div></div></div>`).join('')}
+function defaultRecs(){return[{icon:'🧘',t:'Try 4-7-8 breathing',d:'Inhale 4s, hold 7s, exhale 8s. Reduces cortisol fast.'},{icon:'🌿',t:'Take a 10-minute walk',d:'A short outdoor walk boosts serotonin and mood.'},{icon:'📵',t:'Digital detox after 9 PM',d:'Reduce screen time before bed for better sleep.'}].map((r,i)=>`<div class="rec-card" style="animation-delay:${.4+i*.1}s"><div class="rci">${r.icon}</div><div><div class="rct">${r.t}</div><div class="rcd">${r.d}</div></div></div>`).join('')}
+function hlist(entries){if(!entries.length)return'<p style="color:var(--ink3);font-size:13px;text-align:center;padding:16px">No entries yet.</p>';return`<div class="hlist">${entries.map((e,i)=>`<div class="hrow" style="animation-delay:${.05*i}s"><div class="hemoji">${e.emoji}</div><div style="flex:1;min-width:0"><div class="hdate">${shortDate(e.date)}</div><div class="hmood">${e.mood}</div><div class="hsnip">${e.text}</div></div>${riskPill(e.risk)}</div>`).join('')}</div>`}
+let cState={mood:null,answers:{}}
+function renderCheckin(){document.getElementById('page-checkin').innerHTML=`${topbar('Daily Check-In',"Take a moment to reflect on how you're feeling.")}<div class="g3"><div class="card d1" id="ci-card">${hdr("Today's Check-In",'Log your mood and feelings','Daily')}<div class="fl">How are you feeling?</div><div class="mood-grid">${MOODS.map(m=>`<button class="mood-btn" onclick="selMood(this,'${m.emoji}','${m.label}',${m.val})"><span class="mood-emoji">${m.emoji}</span><span class="mood-label">${m.label}</span></button>`).join('')}</div><div class="fl">What's on your mind?</div><textarea class="jtxt" id="jtxt" placeholder="Write freely — how was your day? This is your safe space…" oninput="updateCC()"></textarea><div class="cc" id="cc">0 characters</div><div class="fl">Quick check-in</div><div id="quiz">${QUESTIONS.map(q=>`<div class="quiz-q"><div class="quiz-t">${q.text}</div><div class="quiz-opts">${q.opts.map(o=>`<button class="qopt" data-qid="${q.id}" data-val="${o}" onclick="selQ(this)">${o}</button>`).join('')}</div></div>`).join('')}</div><button class="btn-p" id="abtn" disabled onclick="runAnalysis()">✦ Analyse My Wellbeing</button><div id="loading-area" style="display:none">${loading()}</div><div id="result-area"></div></div><div class="card d2">${hdr('Recommendations','Personalised for you','AI-generated')}<div id="recs-panel">${defaultRecs()}</div></div></div>`;cState={mood:null,answers:{}}}
+function updateCC(){const t=document.getElementById('jtxt').value;document.getElementById('cc').textContent=t.length+' characters'+(t.length<10&&t.length>0?' (min 10)':'');checkReady()}
+function selMood(btn,emoji,label,val){document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');cState.mood={emoji,label,val};checkReady()}
+function selQ(btn){document.querySelectorAll(`.qopt[data-qid="${btn.dataset.qid}"]`).forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');cState.answers[btn.dataset.qid]=btn.dataset.val;checkReady()}
+function checkReady(){const t=document.getElementById('jtxt')?.value.trim()??'',ok=cState.mood&&t.length>10&&Object.keys(cState.answers).length===QUESTIONS.length;const b=document.getElementById('abtn');if(b)b.disabled=!ok}
+async function runAnalysis(){const text=document.getElementById('jtxt').value;document.getElementById('abtn').disabled=true;document.getElementById('loading-area').style.display='block';document.getElementById('result-area').innerHTML='';const result=await analyse({mood:cState.mood,text,answers:cState.answers});document.getElementById('loading-area').style.display='none';document.getElementById('result-area').innerHTML=buildRC(result);document.getElementById('abtn').textContent='✓ Analysed — Retry?';document.getElementById('abtn').disabled=false;setTimeout(()=>{const f=document.getElementById('sbfill');if(f)f.style.width=result.score+'%'},100);if(result.recommendations?.length){const icons=['🧘','💡','🌿'];document.getElementById('recs-panel').innerHTML=result.recommendations.map((r,i)=>`<div class="rec-card" style="animation-delay:${i*.1}s"><div class="rci">${icons[i]||'✦'}</div><div><div class="rct">Tip ${i+1}</div><div class="rcd">${r}</div></div></div>`).join('')}Store.add({date:todayStr(),mood:cState.mood.label,emoji:cState.mood.emoji,moodVal:cState.mood.val,text,risk:result.riskLevel,score:result.score,emotions:result.emotions,recommendations:result.recommendations});toast('Check-in saved!','success')}
+function buildRC(r){const cfg=RISK[r.riskLevel]??RISK.low,ems=(r.emotions??[]).map((e,i)=>etag(e,i*.08)).join(''),recs=(r.recommendations??[]).map((x,i)=>`<li class="ri" style="animation-delay:${.4+i*.1}s">${x}</li>`).join(''),crisis=r.riskLevel==='high'?`<div class="crisis"><div class="crisis-title">💙 You're not alone — help is here</div>${CRISIS.slice(0,3).map((l,i)=>`<div class="cline" style="animation-delay:${.5+i*.08}s"><div class="cicon">${l.icon}</div><div><div class="cname">${l.name}</div><div class="cnum">${l.num} · ${l.sub}</div></div><button class="ccall">Call</button></div>`).join('')}</div>`:'';return`<div class="rc ${r.riskLevel}"><div class="rc-top"><div class="rc-icon">${cfg.icon}</div><div class="rc-meta"><div class="rc-rl">Risk Level</div><div class="rc-title">${cfg.label}</div></div><div class="rc-score">${r.score}</div></div><div class="sb-bg"><div class="sb-fill" id="sbfill" style="background:${cfg.bar}"></div></div><div class="etags">${ems}</div><div class="ai-insight">${r.aiInsight}</div><div class="rl">Personalised Tips</div><ul class="rlist">${recs}</ul></div>${crisis}`}
+function renderProgress(){const{avg,streak,wellness,total}=Store.stats(),goals=[{icon:'🧘',label:'Meditate daily',target:30,done:18,unit:'days'},{icon:'🏃',label:'Exercise 4× a week',target:16,done:12,unit:'sessions'},{icon:'😴',label:'Sleep 7–8 hours',target:30,done:20,unit:'nights'},{icon:'📓',label:'Journal every day',target:30,done:12,unit:'entries'}];document.getElementById('page-progress').innerHTML=`${topbar('Your Progress','Track how your mental wellbeing has changed over time.')}<div class="stat-grid"><div class="stat-card purple d1"><div class="stat-icon">📝</div><div class="stat-label">Total Entries</div><div class="stat-value" data-t="${total}">0</div><div class="stat-trend tg">All-time</div></div><div class="stat-card teal d2"><div class="stat-icon">📊</div><div class="stat-label">Avg Risk Score</div><div class="stat-value" data-t="${avg}">0</div><div class="stat-trend ${avg<40?'tg':'tw'}">${avg<40?'↓ Below threshold':'Needs attention'}</div></div><div class="stat-card amber d3"><div class="stat-icon">🧠</div><div class="stat-label">Wellness Index</div><div class="stat-value" data-t="${wellness}">0</div><div class="stat-trend tg">Overall score</div></div><div class="stat-card rose d4"><div class="stat-icon">🔥</div><div class="stat-label">Day Streak</div><div class="stat-value" data-t="${streak}">0</div><div class="stat-trend tg">Keep going!</div></div></div><div class="g2"><div class="card d5">${hdr('Risk Distribution','All-time breakdown','Doughnut')}<div class="chart-wrap"><canvas id="dc-canvas"></canvas></div></div><div class="card d6">${hdr('Score History','Last 10 check-ins','Bar chart')}<div class="chart-wrap"><canvas id="bc-canvas"></canvas></div></div></div><div class="card d7">${hdr('Monthly Goals',"Your wellness habits this month",'March 2026','pg')}<div class="goal-grid">${goals.map(g=>{const pct=Math.round(g.done/g.target*100),bc=pct>=70?'#52C97A':pct>=40?'#FFB547':'#FF6B9D';return`<div><div class="goal-top"><span class="goal-name">${g.icon} ${g.label}</span><span style="font-size:11px;color:var(--ink3)">${g.done}/${g.target} ${g.unit}</span></div><div class="pb-wrap"><div class="pb-fill" data-p="${pct}" style="background:linear-gradient(90deg,${bc},${bc}99)"></div></div><div style="font-size:11px;color:var(--ink3);margin-top:4px">${pct}% complete</div></div>`}).join('')}</div></div>`;animStats();animBars();setTimeout(()=>{buildDonut('dc-canvas');buildBar('bc-canvas')},300)}
+function renderResources(){document.getElementById('page-resources').innerHTML=`${topbar('Resources & Support','Tools, guides, and helplines curated for your wellbeing.')}<div class="res-hero d1"><h3>You're doing great by checking in 🌿</h3><p style="font-size:14px;color:var(--ink2);line-height:1.65;margin-top:4px">Mental health is a journey. These resources can support you every step of the way.</p></div><div class="res-grid">${RESOURCES.map((r,i)=>`<div class="res-card" style="animation-delay:${.1+i*.08}s"><div class="res-icon">${r.icon}</div><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px"><div class="res-title">${r.title}</div><span style="background:${r.tb};color:${r.tc};padding:3px 10px;border-radius:100px;font-size:10px;font-weight:600;flex-shrink:0">${r.tag}</span></div><div class="res-desc">${r.desc}</div><a class="res-link" href="#" onclick="return false">Explore →</a></div>`).join('')}</div><div class="card d7"><div style="display:flex;align-items:center;gap:12px;margin-bottom:18px"><div style="width:42px;height:42px;border-radius:10px;background:var(--rol);display:flex;align-items:center;justify-content:center;font-size:20px">🆘</div><div><div class="card-title">Crisis Helplines</div><div class="card-sub">Available if you need immediate support</div></div></div><div class="g2" style="gap:10px">${CRISIS.map((l,i)=>`<div class="cline" style="animation-delay:${.2+i*.08}s"><div class="cicon">${l.icon}</div><div style="flex:1;min-width:0"><div class="cname">${l.name}</div><div class="cnum">${l.num}</div><div style="font-size:10px;color:var(--ink3)">${l.sub}</div></div><button class="ccall">Call</button></div>`).join('')}</div><div style="margin-top:14px;padding:14px;background:var(--rol);border:1px solid rgba(255,107,157,.2);border-radius:var(--rxs)"><p style="font-size:12px;color:#CC2060;line-height:1.6"><strong>If you're in immediate danger</strong>, please call emergency services (112) or go to your nearest hospital. You are not alone — help is always available.</p></div></div>`}
+let hFilter='All'
+function renderHistory(){document.getElementById('page-history').innerHTML=`${topbar('Entry History','A full log of your daily check-ins.')}<div class="filter-row">${['All','Low','Moderate','High'].map(f=>`<button class="fbtn${hFilter===f?' active':''}" onclick="setFilter('${f}')">${f}</button>`).join('')}<span style="margin-left:auto;font-size:13px;color:var(--ink3)" id="fcount"></span></div><div id="elist"></div>`;renderEntries()}
+function setFilter(f){hFilter=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.toggle('active',b.textContent===f));renderEntries()}
+function renderEntries(){const all=Store.get(),entries=hFilter==='All'?all:all.filter(e=>e.risk===hFilter.toLowerCase());document.getElementById('fcount').textContent=`${entries.length} ${entries.length===1?'entry':'entries'}`;document.getElementById('elist').innerHTML=entries.length?entries.map((e,i)=>buildECard(e,i)).join(''):'<p style="text-align:center;color:var(--ink3);padding:32px">No entries found.</p>'}
+function buildECard(e,i){const cfg=RISK[e.risk]??RISK.low,ems=(e.emotions??[]).map(x=>etag(x)).join(''),recs=(e.recommendations??[]).map(r=>`<li style="font-size:12px;color:var(--ink);padding:4px 0;display:flex;gap:6px"><span style="color:var(--pu);font-weight:700">→</span>${r}</li>`).join('');return`<div class="ecard" id="ec${e.id}" style="animation-delay:${i*.07}s"><div class="erow" onclick="togEntry(${e.id})"><div class="eemoji">${e.emoji}</div><div class="einfo"><div class="edate">${fmtDate(e.date)}</div><div class="emood">${e.mood}</div><div class="esnip">${e.text}</div></div><div class="escore" style="background:${cfg.bg};color:${cfg.tc}">${e.score}</div><div class="eexp">▾</div></div><div class="edetail" id="ed${e.id}"><div class="edetail-inner"><p style="font-size:13px;color:var(--ink);line-height:1.7;font-style:italic;margin-bottom:12px">"${e.text}"</p>${ems?`<div class="etags" style="margin-bottom:10px">${ems}</div>`:''}<div style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:100px;font-size:11px;font-weight:600;background:${cfg.bg};color:${cfg.tc};margin-bottom:10px">${cfg.icon} ${cfg.label} · Score ${e.score}/100</div>${recs?`<div><div style="font-size:11px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Tips from that day</div><ul style="list-style:none">${recs}</ul></div>`:''}</div></div></div>`}
+function togEntry(id){const c=document.getElementById(`ec${id}`),d=document.getElementById(`ed${id}`),o=c.classList.contains('open');c.classList.toggle('open',!o);d.classList.toggle('open',!o)}
+let curPage='dashboard'
+function goTo(id){if(id===curPage)return;curPage=id;document.querySelectorAll('.nav-item').forEach(e=>e.classList.toggle('active',e.dataset.p===id));document.querySelectorAll('.mnb').forEach(e=>e.classList.toggle('active',e.dataset.p===id));document.querySelectorAll('.page').forEach(e=>{e.classList.remove('active');e.style.animation=''});const pg=document.getElementById(`page-${id}`);if(pg){pg.classList.add('active');void pg.offsetWidth;pg.style.animation='pageIn .35s cubic-bezier(.22,1,.36,1) both'};({dashboard:renderDashboard,checkin:renderCheckin,history:renderHistory,progress:renderProgress,resources:renderResources})[id]?.()}
+function buildSidebar(){const el=document.getElementById('snav'),secs=[{k:'main',l:'Main'},{k:'health',l:'Health'},{k:'support',l:'Support'}];secs.forEach(s=>{const items=NAV.filter(n=>n.sec===s.k);if(!items.length)return;const lbl=document.createElement('div');lbl.className='nav-sec-label';lbl.textContent=s.l;el.appendChild(lbl);items.forEach(item=>{const d=document.createElement('div');d.className='nav-item'+(item.id===curPage?' active':'');d.dataset.p=item.id;d.innerHTML=`<span>${item.icon}</span> ${item.label}`;d.onclick=()=>goTo(item.id);el.appendChild(d)})})}
+function buildMobNav(){document.getElementById('mnav').innerHTML=NAV.map(item=>`<button class="mnb${item.id===curPage?' active':''}" data-p="${item.id}" onclick="goTo('${item.id}')"><span class="mni">${item.icon}</span><span class="mnl">${item.label}</span></button>`).join('')}
+document.addEventListener('DOMContentLoaded',()=>{buildSidebar();buildMobNav();renderDashboard()})
+</script>
+</body>
+</html>
