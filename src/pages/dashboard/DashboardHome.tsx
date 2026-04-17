@@ -79,7 +79,7 @@ function TrendChart() {
   return <div className="mc-chart-wrap"><canvas ref={canvasRef} /></div>;
 }
 
-export default function DashboardHome() {
+export default function DashboardHome({ userName = 'there' }: { userName?: string }) {
   const { avg, streak, latest, wellness } = Store.getStats();
   const entries = Store.getEntries();
   const latestRisk = latest as 'low'|'moderate'|'high';
@@ -109,7 +109,7 @@ export default function DashboardHome() {
 
   return (
     <>
-      <TopBar title="Hello, Alex 👋" sub="How are you feeling today? Let's check in." />
+      <TopBar title={`Hello, ${userName} 👋`} sub="How are you feeling today? Let's check in." />
 
       {/* Stats */}
       <div className="mc-stat-grid">
