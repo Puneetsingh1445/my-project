@@ -3,23 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useRef, useEffect, useState } from "react";
-import { motion, useScroll, useTransform, useSpring } from "motion/react";
+import { useEffect, useState } from "react";
 import { useAuth } from "./lib/auth";
+import type { User } from '@supabase/supabase-js';
 import AuthModal from "./components/AuthModal";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import Features from "./components/Features";
 import Footer from "./components/Footer";
 import Dashboard from "./pages/dashboard/Dashboard";
-
-const BRAIN_SRC = "/brain-hero.png";
-const FALLBACK_BRAIN_SRC =
-  "https://images.unsplash.com/photo-1559757147-947ae61a5202?auto=format&fit=crop&w=520&q=80";
-
-// scroll range over which the brain travels (fraction of total page)
-const START = 0.05;
-const END   = 0.55;
 
 // Inject Chart.js once
 function useChartJs() {
@@ -33,20 +25,21 @@ function useChartJs() {
 }
 
 export default function App() {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut, justSignedIn, clearJustSignedIn } = useAuth();
   const [showModal,     setShowModal]     = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
 
   useChartJs();
 
-  // When Supabase confirms login, open dashboard automatically
+  // Redirect to dashboard ONLY after a fresh OAuth login — never on page load.
   useEffect(() => {
-    if (user) {
-      setShowDashboard(true);
+    if (justSignedIn) {
+      clearJustSignedIn();
       setShowModal(false);
+      setShowDashboard(true);
       window.scrollTo(0, 0);
     }
-  }, [user]);
+  }, [justSignedIn]);
 
   /* ── Sign out / back ───────────────────────────────────────────────── */
   const handleBack = async () => {
@@ -57,7 +50,6 @@ export default function App() {
 
   /* ── Routing ───────────────────────────────────────────────────────── */
   if (loading) {
-    // Brief loading state while Supabase resolves the session
     return (
       <div className="min-h-screen bg-surface flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
@@ -69,11 +61,20 @@ export default function App() {
     return <Dashboard onBack={handleBack} />;
   }
 
+  /* Already authenticated — show landing with "Go to Dashboard" CTA. */
+  const handleGotoDashboard = () => {
+    setShowDashboard(true);
+    window.scrollTo(0, 0);
+  };
+
   return (
     <>
-      <LandingPage onOpenDashboard={() => setShowModal(true)} />
+      <LandingPage
+        user={user}
+        onOpenModal={() => setShowModal(true)}
+        onGotoDashboard={handleGotoDashboard}
+      />
 
-      {/* Auth modal — shown when user clicks "Start Your Journey" */}
       {showModal && (
         <AuthModal
           onClose={() => setShowModal(false)}
@@ -89,8 +90,9 @@ export default function App() {
 }
 
 /* ══════════════════════════════════════════════════════════════════════
-   Landing Page  —  all animation / scroll logic kept exactly as before
+   Landing Page  —  clean shell, no floating brain overlay
 ══════════════════════════════════════════════════════════════════════ */
+
 
 function LandingPage({ onOpenDashboard }: { onOpenDashboard: () => void }) {
   const containerRef  = useRef<HTMLDivElement>(null);
@@ -196,21 +198,29 @@ function LandingPage({ onOpenDashboard }: { onOpenDashboard: () => void }) {
         </div>
       )}
 
-      <main ref={containerRef} className="pt-32 pb-12 px-6 max-w-[1440px] mx-auto space-y-12">
-        <Hero onOpenDashboard={onOpenDashboard} />
-        <Features targetSlotRef={targetSlotRef} landed={landed}>
-          {landed && (
-            <div className="relative w-full h-full flex justify-center items-center pointer-events-none">
-              <div className="absolute w-[520px] h-[520px] rounded-full bg-primary/10 blur-[120px] opacity-15" />
-              <div className="relative" style={{ transform: "rotate(-6deg) scale(1.18)" }}>
-                {BrainImage}
-              </div>
-            </div>
-          )}
-        </Features>
+function LandingPage({
+  user,
+  onOpenModal,
+  onGotoDashboard,
+}: {
+  user: User | null;
+  onOpenModal: () => void;
+  onGotoDashboard: () => void;
+}) {
+  const handleCTA = user ? onGotoDashboard : onOpenModal;
+
+  return (
+    <div className="min-h-screen bg-surface selection:bg-primary/10 selection:text-primary">
+      <Navbar user={user} onCTA={handleCTA} />
+
+
+      <main className="pt-28 pb-12 px-6 max-w-[1440px] mx-auto space-y-12">
+        <Hero user={user} onCTA={handleCTA} />
+        <Features />
       </main>
 
       <Footer />
     </div>
   );
 }
+

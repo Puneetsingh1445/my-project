@@ -1,8 +1,12 @@
 import { motion, useScroll, useSpring } from "motion/react";
+import type { User } from '@supabase/supabase-js';
 
-interface NavbarProps { onOpenDashboard: () => void; }
+interface NavbarProps {
+  user: User | null;
+  onCTA: () => void;
+}
 
-export default function Navbar({ onOpenDashboard }: NavbarProps) {
+export default function Navbar({ user, onCTA }: NavbarProps) {
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
@@ -38,10 +42,10 @@ export default function Navbar({ onOpenDashboard }: NavbarProps) {
           <motion.button 
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={onOpenDashboard}
+            onClick={onCTA}
             className="bg-primary text-on-primary px-8 py-3 rounded-xl font-headline font-bold text-sm tracking-wide shadow-lg hover:shadow-primary/20 transition-all duration-300"
           >
-            Start Your Journey
+            {user ? '→ Go to Dashboard' : 'Start Your Journey'}
           </motion.button>
         </div>
       </nav>

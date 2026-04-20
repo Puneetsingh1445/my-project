@@ -43,7 +43,7 @@ export default function Dashboard({ onBack }: DashboardProps) {
 
   const renderPage = () => {
     switch (page) {
-      case 'dashboard': return <DashboardHome />;
+      case 'dashboard': return <DashboardHome userName={displayName} />;
       case 'checkin':   return <CheckIn />;
       case 'history':   return <History />;
       case 'progress':  return <Progress />;

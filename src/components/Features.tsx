@@ -1,4 +1,3 @@
-import { RefObject, ReactNode } from "react";
 import { motion } from "motion/react";
 import { BarChart3, Edit3, Brain, Network } from "lucide-react";
 
@@ -25,16 +24,10 @@ const capabilities = [
   }
 ];
 
-interface FeaturesProps {
-  targetSlotRef: RefObject<HTMLDivElement>;
-  landed: boolean;
-  children?: ReactNode;
-}
-
-export default function Features({ targetSlotRef, children }: FeaturesProps) {
+export default function Features() {
   return (
     <section id="features" className="relative grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <div className="lg:col-span-11 bg-surface-container-low rounded-[2rem] overflow-hidden p-8 lg:p-20">
+      <div className="lg:col-span-11 bg-surface-container-low rounded-[2rem] p-8 lg:p-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
           {/* Left: Capabilities */}
@@ -93,16 +86,27 @@ export default function Features({ targetSlotRef, children }: FeaturesProps) {
             </motion.div>
           </div>
 
-          {/* Right: Target slot — brain lands here */}
-          <div
-            ref={targetSlotRef}
-            className="relative flex justify-center items-center min-h-[480px] overflow-visible"
+          {/* Right: Static brain visual */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="relative flex justify-center items-center min-h-[400px]"
           >
-            {/* Ambient glow behind landing zone */}
-            <div className="absolute w-[70%] h-[70%] bg-primary/5 rounded-full blur-[60px]" />
-            {/* Brain is rendered here by App when landed */}
-            {children}
-          </div>
+            {/* Ambient glow */}
+            <div className="absolute inset-0 m-auto w-[65%] h-[65%] bg-primary/10 rounded-full blur-[80px]" />
+            <img
+              src="/brain-hero.png"
+              alt="3D brain with blooming flowers"
+              className="relative w-full max-w-[420px] h-auto object-contain drop-shadow-2xl floating-object"
+              style={{ maxHeight: "min(500px, 60vh)", transform: "rotate(-6deg)" }}
+              onError={(e) => {
+                e.currentTarget.src = "https://images.unsplash.com/photo-1559757147-947ae61a5202?auto=format&fit=crop&w=520&q=80";
+                e.currentTarget.onerror = null;
+              }}
+            />
+          </motion.div>
         </div>
       </div>
 
@@ -116,3 +120,4 @@ export default function Features({ targetSlotRef, children }: FeaturesProps) {
     </section>
   );
 }
+
