@@ -21,6 +21,7 @@ export const NAV_ITEMS = [
   { id: 'history',   label: 'History',   icon: '📓', sec: 'main'    },
   { id: 'progress',  label: 'Progress',  icon: '📈', sec: 'health'  },
   { id: 'resources', label: 'Resources', icon: '🛡️', sec: 'support' },
+  { id: 'chat',      label: 'AI Chat',   icon: '💬', sec: 'support' },
 ];
 
 export const CRISIS_LINES = [
@@ -110,26 +111,126 @@ export const shortDate = (d: string) =>
   new Date(d).toLocaleDateString('en-IN', { month:'short', day:'numeric' });
 
 export const FALLBACK_RESULT = {
-  riskLevel: 'moderate', score: 45, emotions: ['uncertain','mixed'],
-  summary: 'Unable to fully analyse.',
-  recommendations: ['Take a short breathing break','Reach out to someone you trust','Step outside for fresh air'],
-  aiInsight: 'Your feelings are valid. Take it one moment at a time.',
+  riskLevel: 'moderate', score: 45, emotions: ['uncertain', 'mixed'],
+  summary: "I'm here for you. Can you tell me a bit more?",
+  recommendations: [
+    'Take a short breathing break',
+    'Reach out to someone you trust',
+    'Step outside for some fresh air',
+  ],
+  aiInsight: "Your feelings are valid. Take it one moment at a time. 💜",
 };
 
-export async function analyseWellbeing({ mood, text, answers }: { mood: { label: string; val: number }; text: string; answers: Record<string,string> }) {
-  const prompt = `You are a compassionate mental health screening assistant for students and young professionals.
-Analyse the following check-in and return ONLY a valid JSON object, no preamble, no markdown.
-User mood: ${mood.label} (score ${mood.val}/5)
-Journal entry: "${text}"
-Sleep: ${answers.sleep??'unknown'}, Stress: ${answers.stress??'unknown'}, Social: ${answers.social??'unknown'}, Appetite: ${answers.appetite??'unknown'}
-Return exactly: {"riskLevel":"low"|"moderate"|"high","score":0-100,"emotions":["word1","word2"],"summary":"one sentence max 20 words","recommendations":["tip1 max 12 words","tip2","tip3"],"aiInsight":"one warm encouraging sentence max 25 words"}`;
+// ── Module-level guard — prevents duplicate analysis calls ───────────────────
+let ANALYSE_IN_FLIGHT = false;
 
-  try {
-    const r = await fetch('/api/analyse', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ prompt }) });
-    if (!r.ok) throw new Error(String(r.status));
-    const raw = await r.text();
-    return JSON.parse(raw.replace(/```json|```/g,'').trim());
-  } catch {
+// ── Extracts the first JSON object from any string (strips markdown fences) ──
+function extractJSON(raw: string): any {
+  // Remove ```json ... ``` or ``` ... ``` wrappers
+  const stripped = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+  // Find the first {...} block
+  const start = stripped.indexOf('{');
+  const end   = stripped.lastIndexOf('}');
+  if (start === -1 || end === -1) throw new Error('No JSON object found in response');
+  return JSON.parse(stripped.slice(start, end + 1));
+}
+
+export async function analyseWellbeing({
+  mood, text, answers,
+}: {
+  mood: { label: string; val: number };
+  text: string;
+  answers: Record<string, string>;
+}) {
+  // Hard guard — only one analysis at a time
+  if (ANALYSE_IN_FLIGHT) {
+    console.log('[analyseWellbeing] already in flight — returning fallback');
     return FALLBACK_RESULT;
   }
+
+  ANALYSE_IN_FLIGHT = true;
+  console.log('[analyseWellbeing] 🚀 Calling Gemini 1.5-flash');
+
+  const prompt =
+    `You are a compassionate mental health screening assistant for students and young professionals.
+Analyse the following check-in and return ONLY a valid JSON object — no preamble, no markdown, no comments.
+
+User mood: ${mood.label} (score ${mood.val}/5)
+Journal entry: "${text}"
+Sleep: ${answers.sleep ?? 'unknown'}, Stress: ${answers.stress ?? 'unknown'}, Social: ${answers.social ?? 'unknown'}, Appetite: ${answers.appetite ?? 'unknown'}
+
+Return exactly this JSON structure:
+{
+  "riskLevel": "low" | "moderate" | "high",
+  "score": <integer 0-100, higher = more at-risk>,
+  "emotions": ["word1", "word2"],
+  "summary": "<one sentence, max 20 words>",
+  "recommendations": ["<tip1 max 12 words>", "<tip2 max 12 words>", "<tip3 max 12 words>"],
+  "aiInsight": "<one warm encouraging sentence, max 25 words>"
+}`;
+
+  const apiKey = (import.meta as any).env?.VITE_GEMINI_API_KEY as string | undefined;
+
+  if (!apiKey || apiKey.trim() === '' || apiKey === 'your_gemini_api_key_here') {
+    console.warn('[analyseWellbeing] VITE_GEMINI_API_KEY not configured — using fallback');
+    ANALYSE_IN_FLIGHT = false;
+    return FALLBACK_RESULT;
+  }
+
+  try {
+    const { GoogleGenAI } = await import('@google/genai');
+    const client = new GoogleGenAI({ apiKey });
+
+    // Single attempt, no auto-retry to avoid rate-limit hammering
+    const response = await client.models.generateContent({
+      model:    'gemini-1.5-flash',
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    });
+
+    const rawText = response.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    console.log('[analyseWellbeing] raw response:', rawText.slice(0, 300));
+
+    if (!rawText.trim()) {
+      console.warn('[analyseWellbeing] empty response — using fallback');
+      return FALLBACK_RESULT;
+    }
+
+    const parsed = extractJSON(rawText);
+
+    // Validate required fields
+    const valid =
+      typeof parsed.riskLevel === 'string' &&
+      typeof parsed.score     === 'number' &&
+      Array.isArray(parsed.emotions) &&
+      Array.isArray(parsed.recommendations);
+
+    if (!valid) {
+      console.warn('[analyseWellbeing] invalid shape — using fallback', parsed);
+      return FALLBACK_RESULT;
+    }
+
+    console.log('[analyseWellbeing] ✅ parsed:', parsed);
+    return parsed;
+
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+
+    if (
+      msg.includes('429') ||
+      msg.toLowerCase().includes('quota') ||
+      msg.toLowerCase().includes('rate limit') ||
+      msg.toLowerCase().includes('resource_exhausted')
+    ) {
+      console.warn('[analyseWellbeing] ⚠️ Rate limit hit:', msg);
+    } else {
+      console.error('[analyseWellbeing] ❌ Error:', msg);
+    }
+
+    return FALLBACK_RESULT;
+
+  } finally {
+    ANALYSE_IN_FLIGHT = false;
+    console.log('[analyseWellbeing] 🔓 unlocked');
+  }
 }
+

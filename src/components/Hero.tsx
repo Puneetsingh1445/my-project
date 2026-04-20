@@ -43,8 +43,8 @@ export default function Hero({ onOpenDashboard }: HeroProps) {
           <img
             src="/brain-hero.png"
             alt="3D brain model with blooming flowers"
-            className="block lg:hidden w-[280px] sm:w-[360px] object-contain drop-shadow-2xl"
-            style={{ maxHeight: "min(420px, 70vh)" }}
+            className="block lg:hidden w-[840px] sm:w-[1080px] object-contain drop-shadow-2xl"
+            style={{ maxHeight: "min(1260px, 70vh)" }}
           />
         </div>
 

@@ -161,8 +161,8 @@ function LandingPage({ onOpenDashboard }: { onOpenDashboard: () => void }) {
       <img
         src={BRAIN_SRC}
         alt="3D brain model with blooming flowers"
-        className="w-[380px] md:w-[520px] object-contain floating-object"
-        style={{ maxHeight: "min(520px, 80vh)" }}
+        className="w-[1140px] md:w-[1560px] object-contain floating-object"
+        style={{ maxHeight: "min(1560px, 80vh)" }}
         referrerPolicy="no-referrer"
         onError={(e) => {
           e.currentTarget.src = FALLBACK_BRAIN_SRC;
@@ -184,7 +184,7 @@ function LandingPage({ onOpenDashboard }: { onOpenDashboard: () => void }) {
           className="fixed top-1/2 -translate-y-1/2 left-0 w-full z-20 pointer-events-none flex justify-center"
         >
           <motion.div
-            className="absolute w-[420px] h-[420px] md:w-[520px] md:h-[520px] rounded-full bg-primary/10 blur-[120px]"
+            className="absolute w-[1260px] h-[1260px] md:w-[1560px] md:h-[1560px] rounded-full bg-primary/10 blur-[120px]"
             style={{ scale: glowScale, opacity: glowOpacity, x: brainX, y: brainY }}
           />
           <motion.div

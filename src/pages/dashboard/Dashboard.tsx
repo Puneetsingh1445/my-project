@@ -7,8 +7,9 @@ import CheckIn from './CheckIn';
 import History from './History';
 import Progress from './Progress';
 import Resources from './Resources';
+import GeminiChat from './GeminiChat';
 
-type PageId = 'dashboard' | 'checkin' | 'history' | 'progress' | 'resources';
+type PageId = 'dashboard' | 'checkin' | 'history' | 'progress' | 'resources' | 'chat';
 
 interface DashboardProps {
   onBack: () => void | Promise<void>;
@@ -47,6 +48,7 @@ export default function Dashboard({ onBack }: DashboardProps) {
       case 'history':   return <History />;
       case 'progress':  return <Progress />;
       case 'resources': return <Resources />;
+      case 'chat':      return <GeminiChat />;
     }
   };
 
