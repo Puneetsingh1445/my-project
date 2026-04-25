@@ -25,3 +25,4 @@ day 4 fixed bugs
 day 5 fixed bugs
 day 6 update features
 day 7 fixed bugs
+day 8 fixed bugs
