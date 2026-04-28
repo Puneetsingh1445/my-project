@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Store, RISK_CONFIG, shortDate } from './store';
 
 declare global { interface Window { Chart: any } }
@@ -84,6 +84,27 @@ export default function DashboardHome({ userName = 'there' }: { userName?: strin
   const entries = Store.getEntries();
   const latestRisk = latest as 'low'|'moderate'|'high';
 
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiResponse, setAiResponse] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+
+  const handleAskAI = async () => {
+    const prompt = aiPrompt.trim() || 'Give me a helpful mental health tip for a student.';
+    setAiLoading(true);
+    setAiResponse("");
+    try {
+      const { askGemini } = await import('../../gemini.js');
+      const res = await askGemini(prompt);
+      // Ensure we always display a string, not an error object
+      const text = typeof res === 'string' ? res : JSON.stringify(res);
+      setAiResponse(text);
+    } catch (err: any) {
+      setAiResponse("Error: " + (err?.message || String(err)));
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const paths = [
     { icon:'🧘', name:'Daily Meditation', pct:60, color:'#7C5CFC' },
     { icon:'🏃', name:'Physical Exercise', pct:85, color:'#4ECDC4' },
@@ -145,6 +166,36 @@ export default function DashboardHome({ userName = 'there' }: { userName?: strin
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Gemini AI Assistant */}
+      <div className="mc-card" style={{ marginBottom: 20 }}>
+        <div className="mc-card-header">
+          <div><div className="mc-card-title">Gemini AI Assistant</div><div className="mc-card-sub">Ask anything to your personal AI</div></div>
+          <span className="mc-pill mc-pp">AI Support</span>
+        </div>
+        <div style={{ marginTop: 10 }}>
+          <input 
+            type="text" 
+            value={aiPrompt}
+            onChange={(e) => setAiPrompt(e.target.value)}
+            style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid rgba(124,92,252,0.2)', background: 'transparent', outline: 'none', color: 'inherit', fontSize: '14px' }} 
+            placeholder="Type your question..." 
+          />
+          <button 
+            onClick={handleAskAI}
+            disabled={aiLoading}
+            style={{ marginTop: 10, padding: '10px 20px', background: '#7C5CFC', color: 'white', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '14px' }}
+          >
+            {aiLoading ? "Thinking..." : "Send"}
+          </button>
+        </div>
+        {aiResponse && (
+          <div style={{ marginTop: 15, padding: 15, background: 'rgba(124,92,252,0.05)', borderRadius: 8, fontSize: 14, lineHeight: 1.6 }}>
+            <div style={{ fontWeight: 600, marginBottom: 5 }}>AI Response:</div>
+            <div style={{ whiteSpace: 'pre-wrap' }}>{aiResponse}</div>
+          </div>
+        )}
       </div>
 
       {/* Recs + History */}

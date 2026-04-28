@@ -1,92 +1,51 @@
-function toast(msg, type = 'success') {
-  const container = document.getElementById('toast-container')
-  const el = document.createElement('div')
-  el.className = `toast ${type}`
-  el.textContent = (type === 'success' ? '✓  ' : '✕  ') + msg
-  container.appendChild(el)
-  setTimeout(() => {
-    el.style.animation = 'toastOut .3s forwards'
-    setTimeout(() => el.remove(), 300)
-  }, 3000)
+// ─── GEMINI AI ASSISTANT ──────────────────────────────────────────────────────
+// Uses REST API directly so it works without Vite bundling
+
+const GEMINI_API_KEY = 'AIzaSyCPR-POjpSDoN6oU3Bns1Sf7uf979BHjS0';
+const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+async function askGemini(prompt) {
+  const res = await fetch(GEMINI_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }]
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `HTTP ${res.status}`);
+  }
+  const data = await res.json();
+  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? 'No response received.';
 }
 
-// ─── COUNT-UP ANIMATION ───────────────────────────────────────────────────────
+window.askAI = async function() {
+  const inputEl  = document.getElementById('ai-user-input');
+  const outputEl = document.getElementById('ai-response-box');
+  const btnEl    = document.getElementById('ai-send-btn');
 
-function countUp(el, target, duration = 1200, suffix = '') {
-  let start = 0
-  const isFloat = !Number.isInteger(target)
-  const step = target / (duration / 16)
-  const timer = setInterval(() => {
-    start += step
-    if (start >= target) {
-      el.textContent = (isFloat ? target.toFixed(1) : target) + suffix
-      clearInterval(timer)
-    } else {
-      el.textContent = (isFloat ? start.toFixed(1) : Math.floor(start)) + suffix
-    }
-  }, 16)
-}
+  if (!outputEl) return;
 
-// ─── PROGRESS BAR ─────────────────────────────────────────────────────────────
+  const prompt = (inputEl?.value?.trim())
+    ? inputEl.value.trim()
+    : 'Give me a helpful mental health tip for a student.';
 
-function animateBar(el, pct, delay = 0) {
-  setTimeout(() => { el.style.width = pct + '%' }, delay)
-}
+  outputEl.style.display = 'block';
+  outputEl.innerHTML = '<span style="color:var(--ink3)"><em>✦ Thinking…</em></span>';
+  if (btnEl) btnEl.disabled = true;
 
-// ─── FORMAT DATE ──────────────────────────────────────────────────────────────
-
-function formatDate(dateStr) {
-  const d = new Date(dateStr)
-  return d.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
-}
-
-function shortDate(dateStr) {
-  const d = new Date(dateStr)
-  return d.toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })
-}
-
-function todayStr() {
-  return new Date().toISOString().slice(0,10)
-}
-
-// ─── PILL HTML ────────────────────────────────────────────────────────────────
-
-function pillHtml(text, color = 'purple') {
-  return `<span class="pill pill-${color}">${text}</span>`
-}
-
-// ─── EMOTION TAG HTML ──────────────────────────────────────────────────────────
-
-function emotionTagHtml(label, delay = 0) {
-  const c = EMOTION_COLORS[label?.toLowerCase()] ?? { bg: '#F1EFE8', c: '#5F5E5A' }
-  return `<span class="emotion-tag" style="background:${c.bg};color:${c.c};animation-delay:${delay}s">${label}</span>`
-}
-
-// ─── RISK BADGE HTML ───────────────────────────────────────────────────────────
-
-function riskBadgeHtml(risk) {
-  const cfg = RISK_CONFIG[risk] ?? RISK_CONFIG.low
-  return `<span class="pill pill-${cfg.pill}">${cfg.label.split('—')[0].trim()}</span>`
-}
-
-// ─── SECTION HEADER ───────────────────────────────────────────────────────────
-
-function sectionHeader(title, sub, pillText, pillColor = 'purple') {
-  return `
-    <div class="card-header">
-      <div>
-        <div class="card-title">${title}</div>
-        ${sub ? `<div class="card-sub">${sub}</div>` : ''}
-      </div>
-      ${pillText ? pillHtml(pillText, pillColor) : ''}
-    </div>`
-}
-
-// ─── LOADING DOTS ─────────────────────────────────────────────────────────────
-
-function loadingHtml(label = 'Reading your emotional patterns…') {
-  return `<div class="loading-wrap">
-    <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-    <div class="loading-text">${label}</div>
-  </div>`
-}
+  try {
+    const text = await askGemini(prompt);
+    outputEl.innerHTML = text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n/g, '<br>');
+    if (inputEl) inputEl.value = '';
+  } catch (err) {
+    console.error('Gemini error:', err);
+    outputEl.innerHTML = `<span style="color:var(--ro);">⚠ ${err.message}</span>`;
+  } finally {
+    if (btnEl) btnEl.disabled = false;
+  }
+};

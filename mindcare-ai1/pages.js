@@ -31,6 +31,15 @@ function renderDashboard() {
       </div>
     </div>
 
+    <!-- AI Wellness Insights -->
+    <div class="card delay-6" style="margin-bottom: 20px;">
+      ${sectionHeader('AI Wellness Insights','Get personalised psychological support','Beta','purple')}
+      <p style="font-size:13px;color:var(--ink2);margin-bottom:12px;">Ask a question or request insights based on your current mood.</p>
+      <textarea id="ai-input" class="journal-textarea" style="min-height:60px;margin-bottom:10px;width:100%;" placeholder="E.g., Give me a tip for handling academic stress..."></textarea>
+      <button id="ai-btn" class="btn-primary" style="margin-top:0; width:auto; padding-left: 20px; padding-right: 20px;" onclick="generateAIInsights()">✦ Generate Insights</button>
+      <div id="ai-response-box" style="margin-top:14px;padding:14px;background:var(--s2);border-radius:var(--rsm);border:1px solid rgba(124,92,252,0.1);font-size:13px;line-height:1.6;display:none;color:var(--ink);"></div>
+    </div>
+
     <!-- Recs + History -->
     <div class="grid-2">
       <div class="card delay-7">
@@ -510,4 +519,38 @@ function renderTopBar(title, subtitle) {
       <div class="notif-btn">🔔<div class="notif-dot"></div></div>
     </div>
   </div>`
+}
+
+// ─── AI WELLNESS INSIGHTS ───────────────────────────────────────────────────────
+
+window.generateAIInsights = async function() {
+  const inputEl = document.getElementById('ai-input');
+  const outputEl = document.getElementById('ai-response-box');
+  const btnEl = document.getElementById('ai-btn');
+  
+  const prompt = inputEl && inputEl.value.trim() ? inputEl.value.trim() : "Give me a personalized mental health tip based on common student stress.";
+  
+  if (outputEl) {
+    outputEl.style.display = 'block';
+    outputEl.innerHTML = '<em>Generating insights...</em>';
+  }
+  if (btnEl) btnEl.disabled = true;
+
+  try {
+    // Dynamically import the AI module so it works across vanilla & Vite setups
+    const { askGemini } = await import('/src/ai.js');
+    const responseText = await askGemini(prompt);
+    
+    if (outputEl) {
+      const text = typeof responseText === 'string' ? responseText : JSON.stringify(responseText);
+      outputEl.innerHTML = text.replace(/\n/g, '<br>');
+    }
+  } catch (error) {
+    console.error(error);
+    if (outputEl) {
+      outputEl.innerHTML = `<span style="color:var(--ro);">Error: ${error.message}</span>`;
+    }
+  } finally {
+    if (btnEl) btnEl.disabled = false;
+  }
 }

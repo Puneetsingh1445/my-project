@@ -1,4 +1,4 @@
-let currentPage = 'dashboard'
+let currentPage = null;
 
 function navigateTo(pageId) {
   if (pageId === currentPage) return
@@ -31,13 +31,15 @@ function navigateTo(pageId) {
 
   // Render page content
   const renderers = {
-    dashboard: renderDashboard,
-    checkin:   renderCheckin,
-    history:   renderHistory,
-    progress:  renderProgress,
-    resources: renderResources,
+    dashboard: window.renderDashboard,
+    checkin:   window.renderCheckin,
+    history:   window.renderHistory,
+    progress:  window.renderProgress,
+    resources: window.renderResources,
   }
-  renderers[pageId]?.()
+  if (typeof renderers[pageId] === 'function') {
+    renderers[pageId]()
+  }
 }
 
 // ─── BUILD SIDEBAR ────────────────────────────────────────────────────────────
@@ -48,11 +50,12 @@ function buildSidebar() {
     { key: 'health',  label: 'Health'  },
     { key: 'support', label: 'Support' },
   ]
-  const sidebar = document.getElementById('sidebar-nav')
+  const sidebar = document.getElementById('sidebar-nav') || document.getElementById('snav')
   if (!sidebar) return
 
   sections.forEach(sec => {
-    const items = NAV_ITEMS.filter(n => n.section === sec.key)
+    const navItems = window.NAV_ITEMS || []
+    const items = navItems.filter(n => n.section === sec.key)
     if (!items.length) return
 
     const label = document.createElement('div')
@@ -74,9 +77,10 @@ function buildSidebar() {
 // ─── BUILD MOBILE NAV ─────────────────────────────────────────────────────────
 
 function buildMobileNav() {
-  const nav = document.getElementById('mobile-nav-items')
+  const nav = document.getElementById('mobile-nav-items') || document.getElementById('mnav')
   if (!nav) return
-  const mobileItems = NAV_ITEMS.slice(0, 5)
+  const navItems = window.NAV_ITEMS || []
+  const mobileItems = navItems.slice(0, 5)
   nav.innerHTML = mobileItems.map(item => `
     <button class="mob-nav-btn ${item.id === currentPage ? 'active' : ''}" data-page="${item.id}" onclick="navigateTo('${item.id}')">
       <span class="mob-nav-icon">${item.icon}</span>
@@ -85,6 +89,8 @@ function buildMobileNav() {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
+
+window.navigateTo = navigateTo;
 
 document.addEventListener('DOMContentLoaded', () => {
   buildSidebar()
