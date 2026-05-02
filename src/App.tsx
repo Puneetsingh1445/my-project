@@ -93,6 +93,8 @@ export default function App() {
    Landing Page  —  clean shell, no floating brain overlay
 ══════════════════════════════════════════════════════════════════════ */
 
+import BrainScrollOverlay from "./components/BrainScrollOverlay";
+
 function LandingPage({
   user,
   onOpenModal,
@@ -114,6 +116,9 @@ function LandingPage({
       </main>
 
       <Footer />
+      
+      {/* Scroll-driven floating brain overlay */}
+      <BrainScrollOverlay />
     </div>
   );
 }

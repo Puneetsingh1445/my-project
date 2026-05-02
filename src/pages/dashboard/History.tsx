@@ -1,6 +1,9 @@
 import { useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { Store, RISK_CONFIG, EMOTION_COLORS, formatDate } from './store';
 import type { Entry } from './store';
+
+interface HistoryProps { user?: User | null; }
 
 function EntryCard({ entry, index }: { entry: Entry; index: number }) {
   const [open, setOpen] = useState(false);
@@ -50,9 +53,11 @@ function EntryCard({ entry, index }: { entry: Entry; index: number }) {
   );
 }
 
-export default function History() {
+export default function History({ user }: HistoryProps) {
+  const userId = user?.id ?? null;
+
   const [filter, setFilter] = useState('All');
-  const allEntries = Store.getEntries();
+  const allEntries = Store.getEntries(userId);
   const filtered = filter === 'All' ? allEntries : allEntries.filter(e => e.risk === filter.toLowerCase());
   const now = new Date().toLocaleDateString('en-IN', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
 
@@ -73,14 +78,19 @@ export default function History() {
         <span className="mc-filter-count">{filtered.length} {filtered.length===1?'entry':'entries'}</span>
       </div>
 
-      {filtered.length === 0
-        ? <p style={{textAlign:'center',color:'var(--ink3)',padding:32}}>No entries found for this filter.</p>
-        : filtered.map((e,i) => (
-            <div key={e.id}>
-              <EntryCard entry={e} index={i} />
-            </div>
-          ))
-      }
+      {filtered.length === 0 ? (
+        <p style={{textAlign:'center',color:'var(--ink3)',padding:32}}>
+          {allEntries.length === 0
+            ? 'No entries yet. Complete your first check-in to get started!'
+            : 'No entries found for this filter.'}
+        </p>
+      ) : (
+        filtered.map((e,i) => (
+          <div key={e.id}>
+            <EntryCard entry={e} index={i} />
+          </div>
+        ))
+      )}
     </>
   );
 }

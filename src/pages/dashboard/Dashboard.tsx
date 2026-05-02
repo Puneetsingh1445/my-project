@@ -1,14 +1,18 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useAuth } from '../../lib/auth';
 import './dashboard.css';
-import { NAV_ITEMS } from './store';
+import { NAV_ITEMS, Store } from './store';
 import DashboardHome from './DashboardHome';
 import CheckIn from './CheckIn';
 import History from './History';
 import Progress from './Progress';
 import Resources from './Resources';
+import AdminDashboard from './AdminDashboard';
 
-type PageId = 'dashboard' | 'checkin' | 'history' | 'progress' | 'resources';
+// ── Admin access gate — only this email can see the Admin page ─────────────
+const ADMIN_EMAIL = 'punitsingh55575@gmail.com';
+
+type PageId = 'dashboard' | 'checkin' | 'history' | 'progress' | 'resources' | 'admin';
 
 interface DashboardProps {
   onBack: () => void | Promise<void>;
@@ -19,6 +23,13 @@ export default function Dashboard({ onBack }: DashboardProps) {
   const { user, signOut } = useAuth();
 
   const goTo = useCallback((id: PageId) => setPage(id), []);
+
+  // Admin check — only the owner's email qualifies
+  const isAdmin = !!(user?.email && user.email === ADMIN_EMAIL);
+
+  // Evict any stale legacy localStorage keys (mc_anon_id, bare mc_entries, mc_entries_anon_*)
+  // so guest users always start with a clean slate.
+  useEffect(() => { Store.purgeGuestData(); }, []);
 
   // Derive display info from Supabase user_metadata (Google OAuth fills these)
   const displayName: string =
@@ -42,11 +53,15 @@ export default function Dashboard({ onBack }: DashboardProps) {
 
   const renderPage = () => {
     switch (page) {
-      case 'dashboard': return <DashboardHome userName={displayName} />;
-      case 'checkin':   return <CheckIn />;
-      case 'history':   return <History />;
-      case 'progress':  return <Progress />;
+      case 'dashboard': return <DashboardHome userName={displayName} user={user} />;
+      case 'checkin':   return <CheckIn user={user} onSaved={() => goTo('dashboard')} />;
+      case 'history':   return <History user={user} />;
+      case 'progress':  return <Progress user={user} />;
       case 'resources': return <Resources />;
+      // ── Admin route: double-guarded — routing level + component level ──
+      case 'admin':     return isAdmin
+        ? <AdminDashboard user={user} />
+        : <DashboardHome userName={displayName} user={user} />; // non-admins silently redirected
     }
   };
 
@@ -92,6 +107,20 @@ export default function Dashboard({ onBack }: DashboardProps) {
             );
           })}
 
+          {/* Admin nav item — only visible to the owner */}
+          {isAdmin && (
+            <div style={{ marginTop: 8 }}>
+              <div className="mc-nav-sec-label">Admin</div>
+              <div
+                className={`mc-nav-item${page === 'admin' ? ' active' : ''}`}
+                onClick={() => goTo('admin')}
+                style={{ color: page === 'admin' ? undefined : '#7C5CFC' }}
+              >
+                <span>🛡️</span> Admin Panel
+              </div>
+            </div>
+          )}
+
           {/* Footer */}
           <div className="mc-sidebar-footer">
             {/* User row with real auth data */}
@@ -105,6 +134,9 @@ export default function Dashboard({ onBack }: DashboardProps) {
               <div style={{flex:1,minWidth:0}}>
                 <div className="mc-user-name" title={displayName} style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
                   {displayName}
+                  {isAdmin && (
+                    <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 100, background: 'rgba(124,92,252,0.15)', color: '#7C5CFC', verticalAlign: 'middle' }}>ADMIN</span>
+                  )}
                 </div>
                 {email && (
                   <div className="mc-user-role" title={email} style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>

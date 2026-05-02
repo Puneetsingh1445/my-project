@@ -1,9 +1,11 @@
 import { useState, useRef } from 'react';
-import { MOODS, QUESTIONS, CRISIS_LINES, RISK_CONFIG, EMOTION_COLORS, Store, analyseWellbeing, todayStr } from './store';
+import type { User } from '@supabase/supabase-js';
+import { MOODS, QUESTIONS, CRISIS_LINES, RISK_CONFIG, EMOTION_COLORS, Store, analyseWellbeing, todayStr, scoreCheckIn } from './store';
 import { addMood } from '../../lib/moods';
 import { useAuth } from '../../lib/auth';
 
 interface MoodOption { emoji: string; label: string; val: number; }
+interface CheckInProps { user?: User | null; onSaved?: () => void; }
 
 function showToast(msg: string, type: 'success' | 'error' = 'success') {
   const container = document.getElementById('mc-toast-container');
@@ -20,8 +22,9 @@ function showToast(msg: string, type: 'success' | 'error' = 'success') {
   }, 3500);
 }
 
-export default function CheckIn() {
-  const { user } = useAuth();
+export default function CheckIn({ user: userProp, onSaved }: CheckInProps) {
+  const { user: authUser } = useAuth();
+  const user = userProp ?? authUser;
 
   const [selectedMood, setSelectedMood] = useState<MoodOption | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -50,14 +53,11 @@ export default function CheckIn() {
     if (textRef.current) textRef.current.value = '';
   };
 
-  // ── Persist mood to Supabase ────────────────────────────────────────────────
+  // ── Persist mood to Supabase (authenticated users only) ──────────────────────
   const persistMood = async (moodLabel: string, noteText: string) => {
-    // Determine user_id: prefer auth user, fall back to anonymous identifier
-    const userId = user?.id ?? localStorage.getItem('mc_anon_id') ?? (() => {
-      const id = `anon_${Date.now()}`;
-      localStorage.setItem('mc_anon_id', id);
-      return id;
-    })();
+    // Guests have no persistent ID — skip cloud persistence entirely
+    const userId = user?.id;
+    if (!userId) return;
 
     setSaving(true);
     const result = await addMood(userId, moodLabel, noteText);
@@ -66,7 +66,6 @@ export default function CheckIn() {
     if (result.success) {
       showToast('Mood saved to your profile ✦', 'success');
     } else {
-      // Non-blocking: log locally even if cloud save fails
       console.warn('[CheckIn] Supabase save skipped:', result.error);
       showToast('Saved locally (cloud sync unavailable)', 'error');
     }
@@ -80,35 +79,59 @@ export default function CheckIn() {
 
     const text = textRef.current.value;
 
-    // 1. Run AI analysis
-    const res = await analyseWellbeing({ mood: selectedMood!, text, answers });
-    setResult(res);
+    // 1. Local deterministic scoring — always instant, never fails
+    const { score: localScore, riskLevel: localRisk } = scoreCheckIn({
+      moodVal: selectedMood!.val,
+      text,
+      answers,
+    });
+
+    // 2. AI analysis for qualitative enrichment (emotions, insight, recommendations)
+    //    Run concurrently — we don’t block on it for the numeric score.
+    const aiRes = await analyseWellbeing({ mood: selectedMood!, text, answers });
+
+    // 3. Merge: local score is authoritative; AI provides qualitative fields.
+    //    This guarantees positive input → low risk and negative → high risk always.
+    const finalResult = {
+      ...aiRes,          // emotions, summary, recommendations, aiInsight from AI
+      score:     localScore,  // override with our deterministic value
+      riskLevel: localRisk,   // override with our deterministic level
+    };
+
+    setResult(finalResult);
     setLoading(false);
     setAnalysed(true);
 
-    // 2. Save to local store
+    // 4. Save to local store (guests: userId is null, storeKey returns null → not persisted)
+    const entryUserId = user?.id ?? null;
     Store.addEntry({
       date: todayStr(),
       mood: selectedMood!.label,
       emoji: selectedMood!.emoji,
       moodVal: selectedMood!.val,
       text,
-      risk: res.riskLevel,
-      score: res.score,
-      emotions: res.emotions,
-      recommendations: res.recommendations,
-    });
+      risk: finalResult.riskLevel,
+      score: finalResult.score,
+      emotions: finalResult.emotions,
+      recommendations: finalResult.recommendations,
+    }, entryUserId);
 
-    showToast('Check-in saved!', 'success');
+    showToast(entryUserId ? 'Check-in saved! ✦' : 'Saved locally — log in to sync ☁', 'success');
 
-    // 3. Persist to Supabase (non-blocking)
+    // 5. Persist to Supabase (non-blocking, auth users only)
     await persistMood(selectedMood!.label, text);
 
-    // 4. Animate score bar
+    // 6. Animate score bar
     setTimeout(() => {
       const fill = document.getElementById('mc-score-bar-fill');
-      if (fill) fill.style.width = res.score + '%';
+      if (fill) fill.style.width = finalResult.score + '%';
     }, 100);
+
+    // 7. Navigate back to Dashboard after a short delay so the user sees the result.
+    //    Works for both authenticated users AND guests.
+    if (onSaved) {
+      setTimeout(onSaved, 2200);
+    }
   };
 
   const now = new Date().toLocaleDateString('en-IN', {

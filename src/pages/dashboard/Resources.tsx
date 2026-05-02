@@ -31,7 +31,15 @@ export default function Resources() {
               <span className="mc-res-tag" style={{background:r.tagBg,color:r.tagC,flexShrink:0}}>{r.tag}</span>
             </div>
             <div className="mc-res-desc">{r.desc}</div>
-            <a className="mc-res-link" href="#" onClick={e=>e.preventDefault()}>Explore →</a>
+            {/* ✅ Explore: opens the resource URL in a new tab */}
+            <a
+              className="mc-res-link"
+              href={r.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Explore →
+            </a>
           </div>
         ))}
       </div>
@@ -54,7 +62,10 @@ export default function Resources() {
                 <div className="mc-crisis-num">{l.num}</div>
                 <div style={{fontSize:10,color:'var(--ink3)'}}>{l.sub}</div>
               </div>
-              <button className="mc-crisis-call">Call</button>
+              {/* ✅ Call: opens the phone dialer using tel: protocol */}
+              <a href={`tel:${l.num.replace(/\D/g, '')}`} style={{textDecoration:'none'}}>
+                <button className="mc-crisis-call">Call</button>
+              </a>
             </div>
           ))}
         </div>

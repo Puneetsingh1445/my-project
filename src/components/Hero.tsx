@@ -117,9 +117,10 @@ export default function Hero({ user, onCTA }: HeroProps) {
           <div className="absolute inset-0 m-auto w-[65%] h-[65%] bg-primary/12 rounded-full blur-[90px]" />
 
           <img
+            id="hero-brain-placeholder"
             src="/brain-hero.png"
             alt="3D brain model with blooming flowers"
-            className="relative w-full max-w-[460px] lg:max-w-[540px] h-auto object-contain drop-shadow-2xl floating-object"
+            className="relative w-full max-w-[500px] lg:max-w-[620px] h-auto object-contain drop-shadow-2xl floating-object opacity-0"
             onError={(e) => {
               e.currentTarget.src = "https://images.unsplash.com/photo-1559757147-947ae61a5202?auto=format&fit=crop&w=520&q=80";
               e.currentTarget.onerror = null;

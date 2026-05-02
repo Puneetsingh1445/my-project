@@ -31,12 +31,12 @@ export const CRISIS_LINES = [
 ];
 
 export const RESOURCES = [
-  { icon:'🧘', title:'Breathing Exercises',  desc:'Quick 4-7-8 breathing to calm your nervous system in under 3 minutes.', tag:'Anxiety',     tagBg:'#F5E8EC', tagC:'#6B2A3A' },
-  { icon:'📓', title:'Journaling Prompts',   desc:'Daily prompts to help you process emotions and build self-awareness.',   tag:'Reflection',  tagBg:'#EDE8FF', tagC:'#5B3FD4' },
-  { icon:'🌙', title:'Sleep Hygiene',        desc:'Science-backed tips for better rest and improved mental clarity.',       tag:'Sleep',       tagBg:'#E6FAF9', tagC:'#0F6E56' },
-  { icon:'🤝', title:'Peer Support',         desc:'Connect with communities of students and young professionals.',         tag:'Social',      tagBg:'#EBF2F7', tagC:'#2A5A72' },
-  { icon:'🎧', title:'Guided Meditations',   desc:'Free sessions from 3 to 20 minutes for any time of day.',              tag:'Mindfulness', tagBg:'#EDFBF2', tagC:'#2E6B40' },
-  { icon:'📚', title:'Self-Help Library',    desc:'Curated articles, videos and worksheets on common mental health topics.',tag:'Education',   tagBg:'#FFF8EC', tagC:'#8C6010' },
+  { icon:'🧘', title:'Breathing Exercises',  desc:'Quick 4-7-8 breathing to calm your nervous system in under 3 minutes.', tag:'Anxiety',     tagBg:'#F5E8EC', tagC:'#6B2A3A', url:'https://www.healthline.com/health/4-7-8-breathing' },
+  { icon:'📓', title:'Journaling Prompts',   desc:'Daily prompts to help you process emotions and build self-awareness.',   tag:'Reflection',  tagBg:'#EDE8FF', tagC:'#5B3FD4', url:'https://positivepsychology.com/journaling-prompts-mental-health/' },
+  { icon:'🌙', title:'Sleep Hygiene',        desc:'Science-backed tips for better rest and improved mental clarity.',       tag:'Sleep',       tagBg:'#E6FAF9', tagC:'#0F6E56', url:'https://www.sleepfoundation.org/sleep-hygiene' },
+  { icon:'🤝', title:'Peer Support',         desc:'Connect with communities of students and young professionals.',         tag:'Social',      tagBg:'#EBF2F7', tagC:'#2A5A72', url:'https://www.7cups.com/' },
+  { icon:'🎧', title:'Guided Meditations',   desc:'Free sessions from 3 to 20 minutes for any time of day.',              tag:'Mindfulness', tagBg:'#EDFBF2', tagC:'#2E6B40', url:'https://www.headspace.com/meditation/guided-meditation' },
+  { icon:'📚', title:'Self-Help Library',    desc:'Curated articles, videos and worksheets on common mental health topics.',tag:'Education',   tagBg:'#FFF8EC', tagC:'#8C6010', url:'https://www.mind.org.uk/information-support/' },
 ];
 
 export const RISK_CONFIG: Record<string, { label: string; icon: string; bg: string; bar: string; tc: string; pill: string }> = {
@@ -56,47 +56,98 @@ export const EMOTION_COLORS: Record<string, { bg: string; c: string }> = {
   mixed:       { bg:'#F1EFE8', c:'#5F5E5A' }, uncertain:  { bg:'#F1EFE8', c:'#5F5E5A' },
 };
 
-// ── Sample data ─────────────────────────────────────────────────────────────────
-
-export const SAMPLE_ENTRIES = [
-  { id:1,  date:'2026-03-13', mood:'Happy',   emoji:'😊', moodVal:5, text:'Had a really productive study session today. Feeling grateful and energised.', risk:'low',      score:22, emotions:['content','grateful'],        recommendations:['Maintain this positive momentum','Keep your sleep schedule consistent','Celebrate small wins today'] },
-  { id:2,  date:'2026-03-12', mood:'Worried', emoji:'😟', moodVal:2, text:'Exam stress is building up a lot. Hard to focus on anything.',                  risk:'moderate', score:58, emotions:['stressed','anxious'],         recommendations:['Try 4-7-8 breathing exercises','Break tasks into smaller steps','Reach out to a study group'] },
-  { id:3,  date:'2026-03-11', mood:'Calm',    emoji:'😌', moodVal:4, text:'Went for a long walk, felt much better after. Nature really helps.',             risk:'low',      score:18, emotions:['calm','hopeful'],             recommendations:['Continue daily walks','Practice gratitude journaling','Connect with a friend'] },
-  { id:4,  date:'2026-03-10', mood:'Sad',     emoji:'😢', moodVal:1, text:"Couldn't focus all day. Feeling disconnected and hopeless.",                     risk:'high',     score:82, emotions:['sad','hopeless','isolated'], recommendations:['Please reach out to a counsellor','Talk to someone you trust','Take a break from academic pressure'] },
-  { id:5,  date:'2026-03-09', mood:'Neutral', emoji:'😐', moodVal:3, text:'Average day, nothing notable happened.',                                          risk:'low',      score:30, emotions:['neutral'],                   recommendations:['Try something new today','Set one small goal','Check in with a friend'] },
-  { id:6,  date:'2026-03-08', mood:'Happy',   emoji:'😊', moodVal:5, text:'Great session with friends. Laughed a lot, felt very connected.',                 risk:'low',      score:14, emotions:['joyful','energised'],         recommendations:['Keep nurturing social bonds','Maintain this energy','Journal about what made you happy'] },
-  { id:7,  date:'2026-03-07', mood:'Worried', emoji:'😟', moodVal:2, text:'Deadline pressure is overwhelming. Feeling behind on everything.',               risk:'moderate', score:62, emotions:['overwhelmed','anxious'],      recommendations:['Prioritise your task list','Take short breaks every 45 min','Deep breathing before sleep'] },
-];
-
 // ── Store ───────────────────────────────────────────────────────────────────────
+// NOTE: Sample/demo data has been removed. Guests always see an empty app.
+// Each logged-in user's data is stored under a userId-scoped localStorage key.
 
 export interface Entry {
   id: number; date: string; mood: string; emoji: string; moodVal: number;
   text: string; risk: string; score: number; emotions: string[]; recommendations: string[];
 }
 
-const STORE_KEY = 'mc_entries';
+/** Returns a localStorage key scoped to the user. Guests use a shared 'mc_entries_guest' bucket. */
+function storeKey(userId: string | null | undefined): string {
+  if (!userId) return 'mc_entries_guest';
+  return `mc_entries_${userId}`;
+}
 
 export const Store = {
-  getEntries(): Entry[] {
-    try { const r = localStorage.getItem(STORE_KEY); return r ? JSON.parse(r) : [...SAMPLE_ENTRIES]; }
-    catch { return [...SAMPLE_ENTRIES]; }
+  /** Returns entries for the given user. Guests use the 'mc_entries_guest' localStorage key. */
+  getEntries(userId: string | null | undefined): Entry[] {
+    const key = storeKey(userId);
+    try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : []; }
+    catch { return []; }
   },
-  save(entries: Entry[]) { localStorage.setItem(STORE_KEY, JSON.stringify(entries)); },
-  addEntry(e: Omit<Entry, 'id'>): Entry[] {
-    const all = this.getEntries();
+  save(entries: Entry[], userId: string | null | undefined) {
+    localStorage.setItem(storeKey(userId), JSON.stringify(entries));
+  },
+  addEntry(e: Omit<Entry, 'id'>, userId: string | null | undefined): Entry[] {
+    const all = this.getEntries(userId);
     const newEntry = { ...e, id: Date.now() } as Entry;
     all.unshift(newEntry);
-    this.save(all);
+    this.save(all, userId);
+    // Notify same-tab listeners (window.storage only fires in OTHER tabs).
+    try { window.dispatchEvent(new CustomEvent('mc:entry-added', { detail: { userId } })); } catch { /* ignore */ }
     return all;
   },
-  getStats() {
-    const entries = this.getEntries();
+  getStats(userId: string | null | undefined) {
+    const entries = this.getEntries(userId);
     const scores = entries.map(x => x.score);
     const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
-    return { avg, streak: entries.length, latest: entries[0]?.risk ?? 'low', wellness: Math.max(0,100-avg), total: entries.length };
+    const hasData = entries.length > 0;
+    const wellness = hasData ? Math.max(0, 100 - avg) : 0;
+
+    // ── Correct streak: count consecutive calendar days ending today ──────────
+    // entries[0] is newest (unshift adds to front), so dates are newest-first.
+    // De-duplicate to one entry per date, then walk backwards.
+    const uniqueDates: string[] = Array.from<string>(new Set(entries.map(e => e.date))).sort(); // asc YYYY-MM-DD
+    let streak = 0;
+    if (uniqueDates.length > 0) {
+      const today = new Date().toISOString().slice(0, 10);
+      const lastDate = uniqueDates[uniqueDates.length - 1];
+      // Only count streak if the user checked in today or yesterday (otherwise it's broken)
+      const daysSinceLast = Math.round(
+        (new Date(today).getTime() - new Date(lastDate).getTime()) / 86_400_000
+      );
+      if (daysSinceLast <= 1) {
+        streak = 1;
+        for (let i = uniqueDates.length - 1; i > 0; i--) {
+          const diff = Math.round(
+            (new Date(uniqueDates[i]).getTime() - new Date(uniqueDates[i - 1]).getTime()) / 86_400_000
+          );
+          if (diff === 1) streak++;
+          else break;
+        }
+      }
+    }
+
+    // ── Latest entry's actual numeric risk score ───────────────────────────────
+    // entries[0] = newest entry (most recent check-in).
+    const latestScore = hasData ? entries[0].score : 0;
+
+    return { avg, streak, latest: entries[0]?.risk ?? 'none', wellness, total: entries.length, latestScore };
   },
-  getLast7(): Entry[] { return this.getEntries().slice(0,7).reverse(); },
+  getLast7(userId: string | null | undefined): Entry[] { return this.getEntries(userId).slice(0,7).reverse(); },
+
+  /**
+   * Remove legacy unscoped keys and anonymous guest data from localStorage.
+   * Call once on app start to ensure no residual guest data bleeds through.
+   */
+  purgeGuestData() {
+    try {
+      // Remove the old anonymous ID used by earlier versions
+      localStorage.removeItem('mc_anon_id');
+      // Remove the old unscoped entry key used before userId-scoping was added
+      localStorage.removeItem('mc_entries');
+      // Remove any anon-scoped entry keys (mc_entries_anon_*)
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('mc_entries_anon_')) keysToRemove.push(key);
+      }
+      keysToRemove.forEach(k => localStorage.removeItem(k));
+    } catch { /* ignore storage errors */ }
+  },
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────────
@@ -109,8 +160,102 @@ export const formatDate = (d: string) =>
 export const shortDate = (d: string) =>
   new Date(d).toLocaleDateString('en-IN', { month:'short', day:'numeric' });
 
+// ── Sentiment Scoring Engine ────────────────────────────────────────────────────
+//
+// Weights: mood 40% | text keywords 30% | quick-check answers 30%
+// Score is a 0-100 RISK scale: low risk → 0-33, moderate → 34-66, high → 67-100
+// Wellness = 100 - score   (so positive input → high wellness, negative → low)
+
+const POSITIVE_WORDS = new Set([
+  'happy','happiness','great','good','well','wonderful','amazing','excellent',
+  'productive','excited','grateful','gratitude','joyful','joy','energised','energized',
+  'content','contentment','hopeful','hope','peaceful','peace','relaxed','relaxing',
+  'blessed','fantastic','terrific','cheerful','optimistic','love','loved','awesome',
+  'splendid','brilliant','delighted','thrilled','positive','calm','fine','better',
+  'improved','motivated','accomplished','proud','refreshed','rested','clear',
+  'focused','inspired','confident','glad','pleased','enjoying','enjoyed','fun',
+  'laugh','laughed','smiling','smile','alive','energetic','light','bright',
+]);
+
+const NEGATIVE_WORDS = new Set([
+  'sad','sadness','stressed','stress','anxious','anxiety','tired','fatigue',
+  'depressed','depression','lonely','loneliness','awful','terrible','horrible',
+  'bad','worried','worry','overwhelmed','miserable','misery','exhausted','exhaustion',
+  'hopeless','fearful','fear','angry','anger','frustrated','frustration','irritated',
+  'broken','crying','cry','cried','struggling','struggle','failing','fail','failed',
+  'helpless','worthless','empty','numb','lost','scared','afraid','nervous','tense',
+  'upset','hurt','pain','suffer','suffering','dark','low','down','sick','ill',
+  'weak','heavy','drained','burnt','burnout','burnedout','isolated','disconnected',
+  'abandoned','rejected','hate','hated','dread','dreading','nauseous','panicking',
+  'panic','restless','insomnia','sleepless','unmotivated','useless','failure',
+]);
+
+/** Risk contribution per answer option (0 = no risk, 100 = maximum risk). */
+const ANSWER_RISK: Record<string, number> = {
+  // sleep
+  'Great': 5,   'Okay': 35,  'Poor': 70,  'Very poor': 90,
+  // stress
+  'Not at all': 5,  'A little': 30,  'Quite a bit': 65,  'Extremely': 90,
+  // social
+  'Yes, meaningfully': 5,  'Briefly': 30,  'Not really': 65,  'Feeling isolated': 90,
+  // appetite
+  'Normal': 5,  'Slightly off': 35,  'Hardly ate': 70,  "Didn't care to eat": 90,
+};
+
+/** Risk contribution per mood value (val 5=very positive, 1=very negative). */
+const MOOD_RISK: Record<number, number> = { 5: 5, 4: 20, 3: 50, 2: 70, 1: 87 };
+
+export interface CheckInInput {
+  moodVal: number;                  // 1–5 (MOODS[].val)
+  text: string;                     // free-text journal entry
+  answers: Record<string, string>;  // quick check-in {sleep, stress, social, appetite}
+}
+
+/**
+ * Deterministic, client-side sentiment scoring engine.
+ * Returns a risk score 0-100 and a riskLevel label.
+ *
+ * This is the authoritative source for numeric scores — the AI is used
+ * for qualitative enrichment only (emotions, recommendations, insight).
+ */
+export function scoreCheckIn({ moodVal, text, answers }: CheckInInput): {
+  score: number;
+  riskLevel: 'low' | 'moderate' | 'high';
+} {
+  // ① Mood component (40%)
+  const moodScore = MOOD_RISK[moodVal] ?? 50;
+
+  // ② Text sentiment component (30%) — keyword matching
+  const words = text.toLowerCase().split(/\W+/).filter(Boolean);
+  let pos = 0, neg = 0;
+  for (const w of words) {
+    if (POSITIVE_WORDS.has(w)) pos++;
+    if (NEGATIVE_WORDS.has(w)) neg++;
+  }
+  const total = pos + neg;
+  // If no sentiment words found, fall back to a mood-biased neutral
+  const textScore = total === 0
+    ? Math.min(100, moodScore + 10)   // bias toward mood when text is ambiguous
+    : Math.round((neg / total) * 100);
+
+  // ③ Quick check-in answers component (30%)
+  const answerValues = Object.values(answers).map(a => ANSWER_RISK[a] ?? 50);
+  const answersScore = answerValues.length
+    ? Math.round(answerValues.reduce((a, b) => a + b, 0) / answerValues.length)
+    : 50;
+
+  // ④ Weighted combination
+  const raw = moodScore * 0.4 + textScore * 0.3 + answersScore * 0.3;
+  const score = Math.max(0, Math.min(100, Math.round(raw)));
+
+  const riskLevel: 'low' | 'moderate' | 'high' =
+    score <= 33 ? 'low' : score <= 66 ? 'moderate' : 'high';
+
+  return { score, riskLevel };
+}
+
 export const FALLBACK_RESULT = {
-  riskLevel: 'moderate', score: 45, emotions: ['uncertain','mixed'],
+  riskLevel: 'moderate', score: 50, emotions: ['uncertain','mixed'],
   summary: 'Unable to fully analyse.',
   recommendations: ['Take a short breathing break','Reach out to someone you trust','Step outside for fresh air'],
   aiInsight: 'Your feelings are valid. Take it one moment at a time.',
