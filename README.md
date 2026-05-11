@@ -31,3 +31,4 @@ day 10 fixed bugs
 day 11 fixed some features
 day 12 fixed ui
 Day 13 update some changes 
+update some features
