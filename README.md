@@ -34,3 +34,4 @@ Day 13 update some changes
 update some features
 updatre ui
 update ui
+fixed bugs
