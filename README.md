@@ -35,3 +35,4 @@ update some features
 updatre ui
 update ui
 fixed bugs
+fixed bugs
