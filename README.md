@@ -36,3 +36,4 @@ updatre ui
 update ui
 fixed bugs
 fixed bugs
+fixed some features 
