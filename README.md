@@ -39,3 +39,4 @@ fixed bugs
 fixed some features 
 fixed bugs
 fixed bugs
+fixed some features 
