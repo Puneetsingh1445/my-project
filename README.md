@@ -43,3 +43,4 @@ fixed some features
 fixed bugs
 fixed ui
 fixing ui
+fixex bugs
