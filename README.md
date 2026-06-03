@@ -50,3 +50,4 @@ fixed bugs
 fixed ui
 update some features 
 fixed ui
+fixed bugs
